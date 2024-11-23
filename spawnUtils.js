@@ -34,7 +34,6 @@ StructureSpawn.prototype.queueCheck = function() {
                     Memory.claimers.push(test)
                 }
                 if(this.memory.queue[0].is == "LRB") {
-                    Game.notify("your creep is done")
                     Memory.longRangeBuilders.push(test)
                 }
                 delete this.memory.queue[0]
