@@ -2,6 +2,9 @@
 
 var code = {
     tick: function(creep) {
+        if(creep === undefined) {
+            return
+        }
         if(creep.memory.room !== undefined) {
             if(creep.store[RESOURCE_ENERGY] == 0) {
                 creep.memory.state = "moving";
@@ -22,7 +25,9 @@ var code = {
                 }
             }
         } else {
-            if(creep.withdraw(Game.getObjectById(creep.memory.spawnid).pos.findClosestByRange(FIND_MY_STRUCTURES,{filter: (struct) => {return struct.structureType == STRUCTURE_STORAGE}})) == ERR_NOT_IN_RANGE) {
+            let debug = Game.getObjectById(creep.memory.spawnid).pos.findClosestByRange(FIND_MY_STRUCTURES,{filter: function(struct) {return struct.structureType == STRUCTURE_STORAGE}})
+            if(creep.ticksToLive < 1000) Game.getObjectById(creep.memory.spawnid).renewCreep(creep)
+            if(creep.withdraw(debug,RESOURCE_ENERGY) !== OK) {
                 creep.moveTo(Game.getObjectById(creep.memory.spawnid),{reusePath:40})
             }
         }

@@ -208,6 +208,10 @@ module.exports.loop = function () {
         }
         for(temp in Memory.longRangeBuilders) {
             let Lbuilder  = Memory.longRangeBuilders[temp]
+            if(Game.creeps[Lbuilder] === undefined) {
+                Memory.longRangeBuilders = funcs.Lremove(Memory.longRangeBuilders,temp)
+                continue
+            }
             longbuild.tick(Game.creeps[Lbuilder])
         }
 
