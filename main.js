@@ -38,6 +38,7 @@ var unithandler = require("handler.newunits");
 var buildercode = require("role.builder");
 var combatcode = require("role.combat");
 var register = require("general.sourceregistering");
+var longbuild = require("role.longrangebuilder");
 var minercode = require("role.longrangeminer");
 var funcs = require("general.functions");
 var haulercode = require("role.hauler")
@@ -170,6 +171,10 @@ module.exports.loop = function () {
         unithandler.newcombatcheck(spawnid);
         global.defenseNeeded = 0
         // Run through each harvester in memory and execute its tasks
+
+        // ||||||||||||||||||||||
+        // run for each unit type
+        // ||||||||||||||||||||||
         if(Game.spawns[spawnid].memory.harvesters.length > 0) {
             Game.spawns[spawnid].memory.harvesters.forEach(item => harvesterforeach(item, spawnid));
         }
@@ -201,6 +206,11 @@ module.exports.loop = function () {
                 }
             }   
         }
+        for(temp in Memory.longRangeBuilders) {
+            let Lbuilder  = Memory.longRangeBuilders[temp]
+            longbuild.tick(Lbuilder)
+        }
+
         if(currentspawn.memory.queen !== undefined) {
             if(currentspawn.memory.queen in Game.creeps) {
                 queencode.tick(Game.creeps[currentspawn.memory.queen])
@@ -217,9 +227,13 @@ module.exports.loop = function () {
         }
     }
 
+
     // Run the miner code for long-range mining logic
     minercode.tick();
-    
+    // ||||||||||||||||||||||
+    //  Unit type running end
+    // ||||||||||||||||||||||
+
     // Clear stored creeps if the first stored creep is undefined
     if(Game.creeps[Memory.storedcreeps[0]] === undefined) {
         Memory.storedcreeps = [];
