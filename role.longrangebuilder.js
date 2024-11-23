@@ -22,7 +22,7 @@ var code = {
                 }
             }
         } else {
-            if(creep.withdraw(Game.getObjectById(creep.memory.spawnid).findClosestByRange(FIND_MY_STRUCTURES,{filter: (struct) => {return struct.structureType == STRUCTURE_STORAGE}})) == ERR_NOT_IN_RANGE) {
+            if(creep.withdraw(Game.getObjectById(creep.memory.spawnid).pos.findClosestByRange(FIND_MY_STRUCTURES,{filter: (struct) => {return struct.structureType == STRUCTURE_STORAGE}})) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(Game.getObjectById(creep.memory.spawnid),{reusePath:40})
             }
         }

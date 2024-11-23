@@ -215,7 +215,7 @@ var code = {
             }
         }
         Memory.haulerlevel = allstores
-        if(code.checkbuildwant(spawnname) <= Memory.spawns[spawnname].builders.length ||Memory.haulers.length < 3) {
+        if(code.checkbuildwant(spawnname) <= Memory.spawns[spawnname].builders.length &&(Memory.haulers.length < 3 || Memory.spawns[spawnname].queen !== undefined)) {
             if((code.checkharvwant(spawnname) <= Memory.spawns[spawnname].harvesters.length)) {
                     if(Game.spawns[spawnname].room.energyAvailable >= buildercost && Memory.haulers.length < Math.round(Memory.haulerneeded/(allmodules.length/2))) {
                         if(Game.spawns[spawnname].spawning == null) {

@@ -208,7 +208,7 @@ module.exports.loop = function () {
         }
         for(temp in Memory.longRangeBuilders) {
             let Lbuilder  = Memory.longRangeBuilders[temp]
-            longbuild.tick(Lbuilder)
+            longbuild.tick(Game.creeps[Lbuilder])
         }
 
         if(currentspawn.memory.queen !== undefined) {
