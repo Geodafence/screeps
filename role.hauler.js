@@ -56,7 +56,7 @@ var code = {
         }
         new RoomVisual(creep.room.name).text('Hauler, grabbing from room: '+creep.memory.patrolling.room, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'red',stroke:"white",strokeWidth:0.01}); 
         if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {
-            creep.move(reverseDirectionTo(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5)[0]))
+            creep.move(reverseDirectionTo(creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, 5)))
             creep.memory.endearly += 1
             global.defenseNeeded = 1
             return

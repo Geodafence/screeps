@@ -6,24 +6,28 @@ StructureSpawn.prototype.queueCheck = function() {
     }
     var errorreg = null
     if(this.memory.queue.length > 0) {
+        if(this.memory.queue[0] === null) {
+            if(this.memory.queue[1] !== undefined) {
+                this.memory.queue[0] = this.memory.queue[1]
+            } else {
+                this.memory.queue = []
+            }
+        }
         if(this.room.energyAvailable >= funcs.partcost(this.memory.queue[0].modules)) {
 
             if(this.spawning === null) { 
                 var test = assign.newid()
-                if(this.memory.queue[0].baseMemory !== null) {
                     errorreg = this.spawnCreep(
                         this.memory.queue[0].modules,
                         test,
-                        this.memory.queue[0].baseMemory,
                     )
-                } else {
-                    errorreg = this.spawnCreep(
-                        this.memory.queue[0].modules,
-                        test
-                    )
-                }
                 console.log("queue opened, attempting to use")
                 if(errorreg == OK) {
+                    if(this.memory.queue[0].baseMemory !== null) {
+                        for(let item in this.memory.queue[0].baseMemory) {
+                            Game.creeps[test].memory[item] = this.memory.queue[0].baseMemory[item]
+                        }
+                    }
                     console.log("dryrun worked, creating fr")
                 global.createdunit = 1
                 if(this.memory.queue[0].is == "claimer") {
@@ -34,6 +38,11 @@ StructureSpawn.prototype.queueCheck = function() {
                     Memory.longRangeBuilders.push(test)
                 }
                 delete this.memory.queue[0]
+                if(this.memory.queue[1] !== undefined) {
+                    this.memory.queue[0] = this.memory.queue[1]
+                } else {
+                    this.memory.queue = []
+                }
             } else {
                 console.log("ok nvm the dryrun failed with error: "+errorreg)
             }
