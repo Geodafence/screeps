@@ -148,6 +148,13 @@ var code = {
                     }
                     }
                 }
+                let check = creep.room.find(FIND_HOSTILE_CREEPS);
+                if(check.length > 0) {
+                    creep.memory.cachsource = creep.pos.findClosestByRange(FIND_STRUCTURES, { filter: (structure) => {
+                        return structure.structureType == STRUCTURE_TOWER
+                    }
+                }).id
+                }
             if(creep.memory.cachsource) {
                 Game.getObjectById(creep.memory.spawnid).renewCreep(creep)
                 if(creep.transfer(Game.getObjectById(creep.memory.cachsource), RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
