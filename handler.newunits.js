@@ -214,8 +214,9 @@ var code = {
                 buildercost = funcs.partcost(allmodules)
             }
         }
+        if(Memory.haulerlevel <= allstores) {
         Memory.haulerlevel = allstores
-        if(code.checkbuildwant(spawnname) <= Memory.spawns[spawnname].builders.length &&(Memory.haulers.length < 3 || Memory.spawns[spawnname].queen !== undefined)) {
+        if(code.checkbuildwant(spawnname) <= Memory.spawns[spawnname].builders.length &&(Memory.haulers.length < 3 || (Memory.spawns[spawnname].queen !== undefined||Game.spawns[spawnname].room.controller.level <= 3))) {
             if((code.checkharvwant(spawnname) <= Memory.spawns[spawnname].harvesters.length)) {
                     if(Game.spawns[spawnname].room.energyAvailable >= buildercost && Memory.haulers.length < Math.round(Memory.haulerneeded/(allmodules.length/2))) {
                         if(Game.spawns[spawnname].spawning == null) {
@@ -225,6 +226,7 @@ var code = {
                         }
                     }
                 }
+        }
         }
         if((Memory.spawns[spawnname].queen === undefined || Memory.spawns[spawnname].queen2 === undefined)&& Game.spawns[spawnname].room.controller.level > 3) {
             if(Game.spawns[spawnname].room.energyAvailable >= buildercost) {

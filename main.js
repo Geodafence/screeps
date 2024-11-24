@@ -77,11 +77,7 @@ module.exports.loop = function () {
                 }
             }
         }
-        let keys = []
-        for (var key in Game.spawns) {
-            keys.push(key);
-        }
-        Memory.haulerneeded = (Math.round(full/2.5))*keys.length
+        Memory.haulerneeded = (Math.round(full/2.5))
         global.updatecache = 0
     }
     let temp = 0
@@ -116,19 +112,19 @@ module.exports.loop = function () {
                 return (structure.structureType == STRUCTURE_EXTENSION);
             }
         }).length;
-        var towers = currentspawn.room.find(FIND_STRUCTURES, {
+        let towers = currentspawn.room.find(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType == STRUCTURE_TOWER)
             }
         });
-        for(const towerold in towers) {
+        for(let towerold in towers) {
             let tower = towers[towerold]
-            const attackers = tower.room.find(FIND_HOSTILE_CREEPS)
+            let attackers = tower.room.find(FIND_HOSTILE_CREEPS)
             if(attackers.length > 0) {
                 attackers.sort((a, b) => b.hits - a.hits);
                 tower.attack(attackers[0])
             } else {
-                const targets = tower.room.find(FIND_STRUCTURES, {
+                let targets = tower.room.find(FIND_STRUCTURES, {
                     filter: object => object.hits < object.hitsMax*0.75
                 });
                 
@@ -149,8 +145,8 @@ module.exports.loop = function () {
         global.kill = 0
         if(currentspawn.room.controller.level > 2) {
             let add = 0
-            for(const temp in Memory.miningrooms) {
-                const I = Memory.miningrooms[temp]
+            for(let temp in Memory.miningrooms) {
+                let I = Memory.miningrooms[temp]
                 if(I.room ==currentspawn.room.name) {
                     add = 1
                 }

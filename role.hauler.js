@@ -145,12 +145,17 @@ var code = {
             }
 
                 if(creep.memory.cachsource === undefined || creep.memory.cachsource === null) {
-                    creep.memory.cachsource= Game.getObjectById(creep.memory.spawnid).room.find(FIND_STRUCTURES, {
+                    let temp= Game.getObjectById(creep.memory.spawnid).room.find(FIND_STRUCTURES, {
                         filter: (structure) => {
                             return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || (Memory.haulers.length > 6 && structure.structureType == STRUCTURE_STORAGE)|| (Memory.haulers.length > 6&& structure.structureType == STRUCTURE_TOWER)) &&
                                 structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
                         }
-                    }).sort(((a, b) => (a.structureType == STRUCTURE_STORAGE || a.structureType == STRUCTURE_TOWER) - (b.structureType == STRUCTURE_STORAGE || b.structureType == STRUCTURE_TOWER)))[0].id;
+                    }).sort(((a, b) => (a.structureType == STRUCTURE_STORAGE || a.structureType == STRUCTURE_TOWER) - (b.structureType == STRUCTURE_STORAGE || b.structureType == STRUCTURE_TOWER)))
+                    if(temp.length == 0) {
+                        creep.memory.spawnid = 0
+                    } else {
+                        creep.memory.cachsource = temp[0].id
+                    }
                 } else {
                     if(Game.getObjectById(creep.memory.cachsource)) {
                     if(Game.getObjectById(creep.memory.cachsource).store.getFreeCapacity(RESOURCE_ENERGY) == 0){
@@ -162,9 +167,6 @@ var code = {
                                     structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
                             }
                         }).sort(((a, b) => (a.structureType == STRUCTURE_STORAGE || a.structureType == STRUCTURE_TOWER) - (b.structureType == STRUCTURE_STORAGE || b.structureType == STRUCTURE_TOWER)))[0].id;
-                        if(creep.memory.cachsource === undefined) {
-                            creep.memory.spawnid = undefined
-                        }
                     } catch {
                     }
                     }
