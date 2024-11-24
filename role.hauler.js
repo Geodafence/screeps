@@ -48,11 +48,15 @@ var code = {
             creep.memory.endearly = 0
             creep.memory.cachTarget = undefined
             creep.memory.cachsource = undefined
+            creep.memory.spawnid = undefined
 
             creep.memory.seed = funcs.getseed()
         }
         if(creep.memory.endearly === undefined) {
             creep.memory.endearly = 0
+        }
+        if(creep.memory.spawnid === undefined) {
+            creep.memory.spawnid = Game.spawns[Game.spawns.keys[Math.floor(Math.random()*Game.spawns.keys.length)]]
         }
         new RoomVisual(creep.room.name).text('Hauler, grabbing from room: '+creep.memory.patrolling.room, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'red',stroke:"white",strokeWidth:0.01}); 
         if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {
