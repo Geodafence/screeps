@@ -9,11 +9,14 @@ var code = {
     run: function(creep) {
         // Array of possible extra tasks when there are no construction sites
         let rand = ["upgrading"];
+        if(creep.room.controller.level < 3) {
+            rand = ["upgrading","repairing"];
+        }
         // Switch to harvesting mode if the creep is building and runs out of energy
         if(creep.memory.building && creep.store[RESOURCE_ENERGY] == 0) {
             creep.memory.building = false;
             // Randomly choose an extra task: "upgrading" or "repairing"
-            creep.memory.extratask = rand[Math.round(Math.random() * 1)];
+            creep.memory.extratask = rand[Math.round(Math.random() * rand.length)];
         }
 
         // Switch to building mode if the creep is full of energy
