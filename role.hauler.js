@@ -14,6 +14,7 @@ return reverseDict[creep.pos.getDirectionTo(target)]
 
 const funcs = require("general.functions");
 const { seededshuffle } = require("./general.functions");
+const { isNull } = require("lodash");
 var code = {
     locateMinerCreeps: function(creep) { 
         
@@ -55,8 +56,13 @@ var code = {
         if(creep.memory.endearly === undefined) {
             creep.memory.endearly = 0
         }
-        if(creep.memory.spawnid === undefined) {
-            creep.memory.spawnid = Game.spawns[Game.spawns.keys[Math.floor(Math.random()*Game.spawns.keys.length)]]
+        if(isNull(Game.getObjectById(creep.memory.spawnid))) {
+            let keys = []
+            for (var key in Game.spawns) {
+                keys.push(key);
+            }
+            let val = keys[Math.floor(Math.random()*keys.length)]
+            creep.memory.spawnid = Game.spawns[val].id
         }
         new RoomVisual(creep.room.name).text('Hauler, grabbing from room: '+creep.memory.patrolling.room, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'red',stroke:"white",strokeWidth:0.01}); 
         if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {

@@ -77,7 +77,11 @@ module.exports.loop = function () {
                 }
             }
         }
-        Memory.haulerneeded = Math.round(full/2.5)
+        let keys = []
+        for (var key in Game.spawns) {
+            keys.push(key);
+        }
+        Memory.haulerneeded = (Math.round(full/2.5))*keys.length
         global.updatecache = 0
     }
     let temp = 0
