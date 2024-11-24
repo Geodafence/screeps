@@ -69,7 +69,7 @@ var code = {
                         structure.store[RESOURCE_ENERGY] > 0;
                 }
         	});
-			if(targets) {
+			if(targets.length > 0) {
                 let trytest = creep.withdraw(targets[0],RESOURCE_ENERGY)
             	if(trytest == ERR_NOT_IN_RANGE) {
                 	creep.moveTo(targets[0],{reusePath: 20})
