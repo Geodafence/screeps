@@ -87,7 +87,15 @@ var code = {
                         // Display label indicating the creep's mining task and target room
                         new RoomVisual(creep.room.name).text('LRM, mining for room: ' + RoomObject.room, creep.pos.x, creep.pos.y + 1, { align: 'center', font: 0.3, color: 'blue', stroke: "white", strokeWidth: 0.01 });
                         if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {
-                            Memory.defenserequests.push({x:pos.x,y:pos.y,room:creep.room.name})
+                            let alreadyrequested = -1
+                            for(let temp in Memory.defenserequests) {
+                                if(Memory.defenserequests[temp].room == creep.memory.room.name) {
+                                    alreadyrequested = 1
+                                }
+                            }
+                            if(alreadyrequested == -1) {
+                            Memory.defenserequests.push({x:creep.pos.x,y:creep.pos.y,room:creep.room.name})
+                            }
                             global.defenseNeeded = 1
                         }
                         // If the creep's energy is not full and it should be mining

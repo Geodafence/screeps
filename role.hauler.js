@@ -67,7 +67,15 @@ var code = {
         new RoomVisual(creep.room.name).text('Hauler, grabbing from room: '+creep.memory.patrolling.room, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'red',stroke:"white",strokeWidth:0.01}); 
         if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {
             creep.move(reverseDirectionTo(creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, 5)))
-            Memory.defenserequests.push({x:pos.x,y:pos.y,room:creep.room.name})
+            let alreadyrequested = -1
+            for(let temp in Memory.defenserequests) {
+                if(Memory.defenserequests[temp].room == creep.memory.room.name) {
+                    alreadyrequested = 1
+                }
+            }
+            if(alreadyrequested == -1) {
+            Memory.defenserequests.push({x:creep.pos.x,y:creep.pos.y,room:creep.room.name})
+            }
             creep.memory.endearly += 1
             global.defenseNeeded = 1
             return
@@ -154,6 +162,9 @@ var code = {
                                     structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
                             }
                         }).sort(((a, b) => (a.structureType == STRUCTURE_STORAGE || a.structureType == STRUCTURE_TOWER) - (b.structureType == STRUCTURE_STORAGE || b.structureType == STRUCTURE_TOWER)))[0].id;
+                        if(creep.memory.cachsource === undefined) {
+                            creep.memory.spawnid = undefined
+                        }
                     } catch {
                     }
                     }

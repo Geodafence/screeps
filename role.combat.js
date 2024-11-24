@@ -58,7 +58,7 @@ function combatCalc(creep,target) {
     } else {
         if(creep.getActiveBodyparts(ATTACK) > 0) {
             if(creep.attack(target) == ERR_NOT_IN_RANGE) {
-                creep.move(creep.pos.getDirectionTo(target))
+                creep.moveTo(target)
                 creep.say("ATTACK")
             }
         } else {
