@@ -89,7 +89,7 @@ var code = {
                 creep.memory.targetCreep = targetCreep
                 creep.memory.patrolling = targetRoom;
                 creep.memory.lastRoom = targetRoom;
-                creep.memory.move = [Math.floor(Math.random() * 50), Math.floor(Math.random() * 50)];
+                creep.memory.defenseoverride = 0
                 creep.memory.wait = 0;
                 creep.memory.TX = undefined
             }
@@ -97,11 +97,17 @@ var code = {
                 creep.memory.patrolling = undefined
                 return
             }
+            if((creep.memory.defenseoverride == 0 || creep.memory.defenseoverride === undefined)&&Memory.defenserequests.length > 0) {
+                let respond = Memory.defenserequests.pop()
+                creep.memory.TX = respond.x; creep.memory.TY = respond.y
+                creep.memory.roomname = respond.room
+            }
+            if(creep.memory.roomname === undefined) creep.memory.roomname = Game.creeps[creep.memory.targetCreep].room.name
             if(creep.memory.TX === undefined) {
                 creep.memory.TX = Game.creeps[creep.memory.targetCreep].pos.x
                 creep.memory.TY = Game.creeps[creep.memory.targetCreep].pos.y
             }
-            creep.moveTo(new RoomPosition(creep.memory.TX,creep.memory.TY,Game.creeps[creep.memory.targetCreep].room.name),{reusePath: 100,stroke: '#ff0000'})
+            creep.moveTo(new RoomPosition(creep.memory.TX,creep.memory.TY,creep.memory.roomname),{reusePath: 100,stroke: '#ff0000'})
             creep.memory.wait+=1
             if(creep.memory.wait > 120) {
                 creep.memory.patrolling = undefined
