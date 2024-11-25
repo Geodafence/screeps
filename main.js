@@ -251,6 +251,11 @@ module.exports.loop = function () {
             Memory.creeps[curcreep] = undefined;
         }
     }
+    for(curcreep in Game.creeps) {
+        if(Memory.creeps[curcreep] === undefined&&!Game.creeps[curcreep].spawning) {
+            Game.creeps[curcreep].suicide()
+        }
+    }
 
 
     if(global.fixticks > 1000) {
