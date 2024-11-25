@@ -184,9 +184,6 @@ var code = {
                     }
                 }
             if(creep.memory.cachsource) {
-                if(creep.ticksToLive < 1000) {
-                Game.getObjectById(creep.memory.spawnid).renewCreep(creep)
-                }
                 if(creep.transfer(Game.getObjectById(creep.memory.cachsource), RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     if(creep.pos.inRangeTo(Game.getObjectById(creep.memory.cachsource), 7)) {
                         creep.moveTo(Game.getObjectById(creep.memory.cachsource), {reusePath: 10,visualizePathStyle: {stroke: '#ffffff'}});
