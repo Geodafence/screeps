@@ -24,7 +24,9 @@ var code = {
             }
         });
     },
-    
+    /**
+    @param {Creep} creep
+    **/
     tick: function(creep) {
         try {
         if(creep.store[RESOURCE_ENERGY] == 0) {
@@ -91,8 +93,14 @@ var code = {
             creep.memory.endearly += 5
         }
         if((creep.memory.patrolling.room !== creep.room.name) && (creep.memory.moving == false)) {
-            let move = new RoomPosition(25,25,creep.memory.patrolling.room)
-            creep.moveTo(move, {reusePath: 200, stroke: 'white'});
+            //if(creep.memory.targetCreeps.length > 0) {
+            //    if(creep.memory.targetCreeps[0] in Memory.LRMpaths) {
+            //        creep.moveByPath(Memory.LRMpaths[creep.memory.targetCreeps[0]])
+            //    }
+            //} else {
+                let move = new RoomPosition(25,25,creep.memory.patrolling.room)
+                creep.moveTo(move, {reusePath: 200, stroke: 'white'});
+           // }
         }  else if (creep.memory.moving == false) {
                 if(creep.memory.cachTarget === undefined || !Game.getObjectById(creep.memory.cachTarget)) {
                     let nullcheck = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES,{filter: (structure) => {
@@ -160,13 +168,17 @@ var code = {
                     if(Game.getObjectById(creep.memory.cachsource)) {
                     if(Game.getObjectById(creep.memory.cachsource).store.getFreeCapacity(RESOURCE_ENERGY) == 0){
                         try {
-                        creep.memory.cachsource= Game.getObjectById(creep.memory.spawnid).room.find(FIND_STRUCTURES, {
-                            filter: (structure) => {
-                                return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || (Memory.haulers.length > 6 &&Memory.longrangemining[4].creeps.length > 0 && structure.structureType == STRUCTURE_STORAGE)
-                                || (Memory.haulers.length > 6&&Memory.longrangemining[4].creeps.length > 0 && structure.structureType == STRUCTURE_TOWER)) &&
-                                    structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                            let temp= Game.getObjectById(creep.memory.spawnid).room.find(FIND_STRUCTURES, {
+                                filter: (structure) => {
+                                    return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || (Memory.haulers.length > 6 && structure.structureType == STRUCTURE_STORAGE)|| (Memory.haulers.length > 6&& structure.structureType == STRUCTURE_TOWER)) &&
+                                        structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                                }
+                            }).sort(((a, b) => (a.structureType == STRUCTURE_STORAGE || a.structureType == STRUCTURE_TOWER) - (b.structureType == STRUCTURE_STORAGE || b.structureType == STRUCTURE_TOWER)))
+                            if(temp.length == 0) {
+                                creep.memory.spawnid = 0
+                            } else {
+                                creep.memory.cachsource = temp[0].id
                             }
-                        }).sort(((a, b) => (a.structureType == STRUCTURE_STORAGE || a.structureType == STRUCTURE_TOWER) - (b.structureType == STRUCTURE_STORAGE || b.structureType == STRUCTURE_TOWER)))[0].id;
                     } catch {
                     }
                     }

@@ -4,6 +4,7 @@ if("harvesters" in Memory != true) {
     console.log("first time loop is restarted");
     Memory.longRangeBuilders = new Array();
     Memory.claimers = new Array();
+    Memory.LRMpaths = new Object();
     Memory.fighters = new Array();
     Memory.haulers = new Array();
     Memory.assignedids = 0;
@@ -43,11 +44,6 @@ var funcs = require("general.functions");
 var haulercode = require("role.hauler")
 require("./spawnUtils")
 var queencode = require("role.queen")
-var deficitcalc = require("deficitCalculator")
-require('creeptalk')({
-    'public': true,
-    'language': require('creeptalk_silly')
-  })
 if(global.fixticks === undefined) {
     global.fixticks = 0
 }
@@ -79,18 +75,8 @@ module.exports.loop = function () {
         Memory.haulerneeded = (Math.round(full/2.5))
         global.updatecache = 0
     }
-    let temp = 0
-    if(temp > 0) {
-        global.inDeficit = 1
-        global.deficitLevel = Memory.storecache-temp
-    } else  {
-        global.inDeficit = 0
-    }
     if(global.defenseNeeded == 1) {
         console.log("defense required")
-    }
-    if(temp > 5) {
-        console.log("in major deficit, amount: "+temp)
     }
     // Loop through each spawn and manage units and tasks
     for(let spawnid in Game.spawns) {
@@ -153,14 +139,6 @@ module.exports.loop = function () {
             if(add == 0) {
                 Memory.miningrooms.push({room:currentspawn.room.name, usedSegment: 0})
             }
-        } else {
-            if(Memory.miningrooms.includes({"room":currentspawn.room.name, usedSegment: 0})) {
-                Memory.miningrooms = funcs.Lremove(Memory.miningrooms,{"room":currentspawn.room.name, usedSegment: 0})
-            }
-        }
-        global.haulercreations = 0
-        for(temp in Memory.longrangemining) {
-            global.haulercreations += Memory.longrangemining[temp].creeps.length
         }
         // Check for new harvester, builder, and combat units
         currentspawn.queueCheck()
@@ -186,33 +164,6 @@ module.exports.loop = function () {
         if(Memory.haulers.length > 0) {
             Memory.haulers.forEach(item => haulerforeach(item, spawnid));
         }
-        for(temp in Memory.claimers) {
-            let claimer = Game.creeps[Memory.claimers[temp]]
-            if(claimer === undefined) {
-                Memory.claimers = funcs.Lremove(Memory.claimers,temp)
-                continue
-            }
-            if(claimer.memory.reserving !== undefined) {
-                if(claimer.room.name !== claimer.memory.reserving) {
-                    claimer.moveTo(new RoomPosition(25,25,claimer.memory.reserving),{reusePath:40})
-                } else {
-                    let check = claimer.room.find(FIND_STRUCTURES,{filter: function(structure) {
-                        return structure.structureType == STRUCTURE_CONTROLLER
-                    }})
-                    if(check) {
-                        if(claimer.reserveController(check[0]) == ERR_NOT_IN_RANGE) claimer.moveTo(check[0])
-                    }
-                }
-            }   
-        }
-        for(temp in Memory.longRangeBuilders) {
-            let Lbuilder  = Memory.longRangeBuilders[temp]
-            if(Game.creeps[Lbuilder] === undefined) {
-                Memory.longRangeBuilders = funcs.Lremove(Memory.longRangeBuilders,temp)
-                continue
-            }
-            longbuild.tick(Game.creeps[Lbuilder])
-        }
 
         if(currentspawn.memory.queen !== undefined) {
             if(currentspawn.memory.queen in Game.creeps) {
@@ -230,6 +181,33 @@ module.exports.loop = function () {
         }
     }
 
+    for(temp in Memory.claimers) {
+        let claimer = Game.creeps[Memory.claimers[temp]]
+        if(claimer === undefined) {
+            Memory.claimers = funcs.Lremove(Memory.claimers,temp)
+            continue
+        }
+        if(claimer.memory.reserving !== undefined) {
+            if(claimer.room.name !== claimer.memory.reserving) {
+                claimer.moveTo(new RoomPosition(25,25,claimer.memory.reserving),{reusePath:40})
+            } else {
+                let check = claimer.room.find(FIND_STRUCTURES,{filter: function(structure) {
+                    return structure.structureType == STRUCTURE_CONTROLLER
+                }})
+                if(check) {
+                    if(claimer.reserveController(check[0]) == ERR_NOT_IN_RANGE) claimer.moveTo(check[0])
+                }
+            }
+        }   
+    }
+    for(temp in Memory.longRangeBuilders) {
+        let Lbuilder  = Memory.longRangeBuilders[temp]
+        if(Game.creeps[Lbuilder] === undefined) {
+            Memory.longRangeBuilders = funcs.Lremove(Memory.longRangeBuilders,temp)
+            continue
+        }
+        longbuild.tick(Game.creeps[Lbuilder])
+    }
 
     // Run the miner code for long-range mining logic
     minercode.tick();
