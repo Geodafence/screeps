@@ -1,7 +1,7 @@
 
 let funcs = require("general.functions")
 var pathDetector = function() {
-    registerFunctions()
+    this.applyFunctions()
 }
 pathDetector.prototype.overrideFunctions = [
     "move"
@@ -14,49 +14,52 @@ pathDetector.prototype.wrapFunction = function (name, originalFunction) {
       return originalFunction.apply(this, arguments);
     };
 }
-pathDetector.update = function() {
-    for(I in Memory.pathItents) {
+pathDetector.prototype.newRoadDetection = function() {
+    for(I in Game.creeps) {
+        let item = Game.creeps[I]
+        if(item.memory._move !== undefined ) {
+            if(item.memory._move.path!==item.memory._lastpath) {
+            if(Memory.pathIntents[item.memory._move.path] === undefined) {
+                Memory.pathIntents[item.memory._move.path] = {
+                    path: item.memory._move.path,
+                    room: item.memory._move.room,
+                    usage: 0,
+                    decay: 0,
+                }
+            }
+            if(Memory.pathIntents[item.memory._move.path] !== undefined) {
+                Memory.pathIntents[item.memory._move.path].usage+=1
+                item.memory._lastpath = item.memory._move.path
+            }
+        }
+        }
+    }
+}
+pathDetector.prototype.update = function() {
+    this.newRoadDetection()
+    for(I in Memory.pathIntents) {
         try {
-        let item = Memory.pathItents[I]
+        let item = Memory.pathIntents[I]
         item.decay+=1
         if(item.decay == 60) {
             item = false
         }
         if(item.usage > 5) {
-            this.road(item.x,item.y,item.room)
+            this.road(Room.deserializePath(item.path),item.room)
         } 
-        if(item !== false) {Memory.pathItents[I] = item} else {Memory.pathIntents.splice(I);return}
+        if(item !== false) {Memory.pathIntents[I] = item} else {Memory.pathIntents.splice(I);return}
     } catch(e) {}
     }
 }
-pathDetector.prototype.road = function(x,y,r) {
+pathDetector.prototype.road = function(ra,r) {
     try {
-        Game.rooms[r].createConstructionSite(x,y,STRUCTURE_ROAD)
+        for(I in ra) {
+            let item = ra[I]
+            Game.rooms[r].createConstructionSite(item.x,item.y,STRUCTURE_ROAD)
+        }
     } catch(e) {}
 }
 pathDetector.prototype.applyFunctions = function() {
-    for(var function_name of this.overrideFunctions) {
-        Creep.prototype[function_name] = this.wrapFunction(function_name, Creep.prototype[function_name])
-      }
-      Creep.prototype.apply = function (group) { 
-        let _new = 0
-        for(T in Memory.pathIntents) {
-            let item = Memory.pathIntents[T]
-            if(item.x == this.pos.x && item.y == this.pos.y) {
-                item.usage += 1
-                item.decay = 0
-                _new = 1
-            }
-            Memory.pathIntents[T] = item
-        }
-        if(!_new) {
-            Memory.pathIntents.push({
-                room: this.memory.room,
-                x: this.pos.x,
-                y: this.pos.y,
-                usage: 0,
-                decay: 0
-            })
-        }
-      }
+
 }
+module.exports = new pathDetector()
