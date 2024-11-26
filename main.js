@@ -43,7 +43,8 @@ var minercode = require("role.longrangeminer");
 var funcs = require("general.functions");
 var haulercode = require("role.hauler")
 require("./spawnUtils")
-var queencode = require("role.queen")
+var queencode = require("role.queen");
+const { isUndefined } = require('lodash');
 if(global.fixticks === undefined) {
     global.fixticks = 0
 }
@@ -54,9 +55,11 @@ module.exports.loop = function () {
     if(Game.cpu.bucket < 500) {
         console.log("extremely low cpu bucket, terminating")
         return
-    }
+    }//
+    Memory.haulerlevel = 0
     global.fixticks += 1
     global.updatecache += 1
+    if(global.restartEco!==undefined) console.log("consolidating eco to "+global.restartEco)
     if(global.updatecache > 400) {
         console.log("updating cache")
         let full = 0
@@ -77,6 +80,11 @@ module.exports.loop = function () {
     }
     if(global.defenseNeeded == 1) {
         console.log("defense required")
+    }
+
+    global.haulercreations = 0
+    for(temp in Memory.longrangemining) {
+        global.haulercreations += Memory.longrangemining[temp].creeps.length
     }
     // Loop through each spawn and manage units and tasks
     for(let spawnid in Game.spawns) {
@@ -224,13 +232,8 @@ module.exports.loop = function () {
 
     // Cleanup memory for creeps that no longer exist
     for(let curcreep in Memory.creeps) {
-        if(!curcreep in Game.creeps) {
+        if(isUndefined(Game.creeps[curcreep])) {
             Memory.creeps[curcreep] = undefined;
-        }
-    }
-    for(curcreep in Game.creeps) {
-        if(Memory.creeps[curcreep] === undefined&&!Game.creeps[curcreep].spawning) {
-            Game.creeps[curcreep].suicide()
         }
     }
 
