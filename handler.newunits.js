@@ -202,7 +202,7 @@ var code = {
         if(allmodulelevels.length-1 < allstores) {
             allstores = allmodulelevels.length-1
         }
-        if(Game.spawns[spawnname].room.controller.level == 1|| (Memory.haulers.length < 2)) {
+        if(Game.spawns[spawnname].room.controller.level == 1|| (Memory.haulers.length < 3)) {
             allstores = 0
             allstorescheck = allstores
         }
@@ -215,21 +215,26 @@ var code = {
             }
         }
         if(Memory.haulerlevel <= allstores) {
-        Memory.haulerlevel = allstores
-        if(Game.spawns[spawnname].room.energyAvailable >= buildercost && Memory.haulers.length < Math.round(Memory.haulerneeded/(allmodules.length/2))) {
-        if(code.checkbuildwant(spawnname) <= Memory.spawns[spawnname].builders.length &&(Memory.haulers.length < 3 || (Memory.spawns[spawnname].queen !== undefined||Game.spawns[spawnname].room.controller.level <= 3))) {
-            if((code.checkharvwant(spawnname) <= Memory.spawns[spawnname].harvesters.length)) {
-                if(Game.spawns[spawnname].spawning == null) {
-                        global.createdunit = 1
-                        code.createhauler(spawnname, allmodules)
-                        return
+            if((Math.ceil(Memory.haulerneeded/(allmodules.length/2))-3) >= Memory.haulers.length) {
+                global.restartEco = spawnname
+            } else {
+                global.restartEco = undefined
+            }
+            Memory.haulerlevel = allstores
+            if(Game.spawns[spawnname].room.energyAvailable >= buildercost && Memory.haulers.length < Math.ceil((Memory.haulerneeded+(allmodules.length/2))/(allmodules.length/2))) {
+            if(code.checkbuildwant(spawnname) <= Memory.spawns[spawnname].builders.length &&(Memory.haulers.length < 3 || (Memory.spawns[spawnname].queen !== undefined||Game.spawns[spawnname].room.controller.level <= 3))) {
+                if((code.checkharvwant(spawnname) <= Memory.spawns[spawnname].harvesters.length)) {
+                    if(Game.spawns[spawnname].spawning == null) {
+                            global.createdunit = 1
+                            code.createhauler(spawnname, allmodules)
+                            return
+                        }
                     }
                 }
             }
         }
-        }
         if(Game.spawns[spawnname].room.energyAvailable >= buildercost) {
-            if((Memory.spawns[spawnname].queen === undefined || Memory.spawns[spawnname].queen2 === undefined)&& Game.spawns[spawnname].room.controller.level > 3) {
+            if((Memory.spawns[spawnname].queen === undefined || (Memory.spawns[spawnname].queen2 === undefined&&global.restartEco===undefined))&& Game.spawns[spawnname].room.controller.level > 3) {
                     if(Game.spawns[spawnname].spawning == null) {
                         global.createdunit = 1
                         code.createqueen(spawnname, allmodules)
@@ -306,7 +311,7 @@ var code = {
             memory: {level: Memory.haulerlevel,spawnid: Game.spawns[spawnname].id}
         })
         console.log("errorlog: "+errorreg)
-        if(errorreg == 0) {
+        if(errorreg == OK) {
             assign.hauler(test);
         }
     },

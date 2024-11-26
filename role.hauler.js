@@ -13,7 +13,6 @@ return reverseDict[creep.pos.getDirectionTo(target)]
 }
 
 const funcs = require("general.functions");
-const { seededshuffle } = require("./general.functions");
 const { isNull } = require("lodash");
 var code = {
     locateMinerCreeps: function(creep) { 
@@ -24,9 +23,6 @@ var code = {
             }
         });
     },
-    /**
-    @param {Creep} creep
-    **/
     tick: function(creep) {
         try {
         if(creep.store[RESOURCE_ENERGY] == 0) {
@@ -58,13 +54,13 @@ var code = {
         if(creep.memory.endearly === undefined) {
             creep.memory.endearly = 0
         }
-        if(isNull(Game.getObjectById(creep.memory.spawnid))) {
+        if(isNull(Game.getObjectById(creep.memory.spawnid))||isNull(creep.memory.spawnid)) {
             let keys = []
             for (var key in Game.spawns) {
                 keys.push(key);
             }
-            let val = keys[Math.floor(Math.random()*keys.length)]
-            creep.memory.spawnid = Game.spawns[val].id
+            let val= Game.spawns[keys[Math.floor(Math.random()*keys.length)]].id
+            creep.memory.spawnid = val
         }
         new RoomVisual(creep.room.name).text('Hauler, grabbing from room: '+creep.memory.patrolling.room, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'red',stroke:"white",strokeWidth:0.01}); 
         if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {
@@ -147,6 +143,9 @@ var code = {
             let leepicstorage = Game.getObjectById(creep.memory.spawnid).room.find(FIND_STRUCTURES, { filter: (structure) => {
                 return structure.structureType == STRUCTURE_STORAGE
             }})
+            if(global.restartEco !== undefined) {
+                creep.memory.spawnid = Game.spawns[global.restartEco].id
+            }
             if(leepicstorage&& Game.getObjectById(creep.memory.spawnid).memory.queen !== undefined) {
                 leepicstorage = leepicstorage[0]
                 creep.memory.cachsource = leepicstorage.id

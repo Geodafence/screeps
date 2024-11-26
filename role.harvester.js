@@ -1,4 +1,5 @@
-var register = require("general.sourceregistering")
+var register = require("general.sourceregistering");
+const { filter } = require("lodash");
 var roleHarvester = {
 
     /** @param {Creep} creep **/
@@ -27,6 +28,14 @@ var roleHarvester = {
                     }
             });
             targets.sort((a, b) => (a.structureType == STRUCTURE_STORAGE || a.structureType == STRUCTURE_TOWER) - (b.structureType == STRUCTURE_STORAGE || b.structureType == STRUCTURE_TOWER));
+            if(creep.room.find(FIND_HOSTILE_CREEPS).length > 0) {
+                let set = creep.room.find(FIND_STRUCTURES, {filter: function(struct) {
+                    return struct.structureType == STRUCTURE_TOWER
+                }})
+                if(set.length > 0) {
+                    targets = set
+                }
+            }
             if(targets.length > 0) {
                 if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                     creep.moveTo(targets[0], {reusePath: 20,visualizePathStyle: {stroke: '#ffffff'}});
