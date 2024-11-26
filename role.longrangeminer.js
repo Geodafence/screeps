@@ -91,28 +91,30 @@ var code = {
                             // If the creep's energy is not full and it should be mining
                             if (creep.memory.state !== "moving") {
                                 if (creep.room.name != RoomObject.room) {
-                                    // Move the creep to the target room center if it’s not in the correct room
-                                    let roompos = new RoomPosition(25, 25, RoomObject.room);
-                                    creep.memory.CalcFrom = {x:creep.pos.x,y:creep.pos.y,room:creep.room.name}
-                                    creep.moveTo(roompos, { reusePath: 200, visualizePathStyle: { stroke: '#ffffff' } });
+
+                                    creep.moveTo(new RoomPosition(25, 25, RoomObject.room), { reusePath: 200, visualizePathStyle: { stroke: '#ffffff' } });
+                                    if(creep.memory._move) {
+                                        creep.placeRoadByPath(creep.memory._move.path,"LRMmid")
+                                    }
+                                    
                                 } else {
                                     if (creep.ticksToLive > 10) {
                                         // Register creep to a source and initiate harvesting
                                         info = register.register("sources", creep, true, Memory.longrangemining[temp]);
                                         if (register.harvest(creep) == OK) {
+                                            if(creep.memory.check !== 1) global.updatecache = 400
                                             creep.memory.check = 1
+                                        } else {
+                                            if(creep.memory._move) {
+                                                creep.placeRoadByPath(creep.memory._move.path,"LRMmid")
+                                            }
                                         }
-                                        if(Game.getObjectById(creep.memory.registeredsource)!==null&&creep.memory.CalcFrom!==undefined&&!(creep.name in Memory.LRMpaths)) {
-                                            let cachePath = PathFinder.search(new RoomPosition(creep.memory.CalcFrom.x,creep.memory.CalcFrom.y,creep.memory.CalcFrom.room),new RoomPosition(creep.pos.x,creep.pos.y,creep.room.name))
-                                            Memory.LRMpaths[creep.name] = cachePath
-                                        } 
                                         if (creep.store[RESOURCE_ENERGY] > 40) {
                                             creep.memory.check = 1
                                             creep.drop(RESOURCE_ENERGY)
                                         }
                                     } else {
                                         register.remove("sources", creep, true, Memory.longrangemining[temp]);
-                                        Memory.LRMpaths[creep.name] = undefined
                                         creep.say("I die :(")
                                     }
                                 }

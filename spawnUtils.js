@@ -54,3 +54,37 @@ StructureSpawn.prototype.queueAppend = function(moduleData,memoryData,creepType,
     this.memory.queue.push({modules: moduleData,baseMemory:memoryData,is:creepType,listid: listId})
     return this.memory.queue.length
 }
+/** 
+ * Creates a road via a serialized string
+ * @param {String} path path array
+ * @param {String} Suceedstorage defines where to store suceeded in memory
+ * @returns {Boolean} if the road placement was completely true or false
+**/
+Creep.prototype.placeRoadByPath = function(path,Suceedstorage) {
+    if(this.memory["_"+Suceedstorage]){
+        if(this.memory["_"+Suceedstorage].p==path&&this.memory["_"+Suceedstorage].s==true) {
+            return true
+        }
+    }
+    let t = true
+    path = Room.deserializePath(path)
+    if(path.length == 0) {
+        return true
+    }
+    for(I in path) {
+        let x = path[I].x;let y = path[I].y;let r = this.room.name
+            let a = Game.rooms[r].lookAt(x,y)
+            let b = true
+            for(let _1 in a) {
+                if(a[_1].type=="structure") {
+                    b=false
+                }
+            }
+            if(b) {
+                let s = Game.rooms[r].createConstructionSite(x,y,STRUCTURE_ROAD)
+                if(s==ERR_FULL) return false
+                if(s==ERR_INVALID_TARGET) t=false
+            }
+    }
+    this.memory["_"+Suceedstorage]={p:path,s:t}
+}
