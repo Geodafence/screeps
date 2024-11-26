@@ -61,6 +61,7 @@ StructureSpawn.prototype.queueAppend = function(moduleData,memoryData,creepType,
  * @returns {Boolean} if the road placement was completely true or false
 **/
 Creep.prototype.placeRoadByPath = function(path,Suceedstorage) {
+    return
     if(this.memory["_"+Suceedstorage]){
         if(this.memory["_"+Suceedstorage].p==path&&this.memory["_"+Suceedstorage].s==true) {
             return true
