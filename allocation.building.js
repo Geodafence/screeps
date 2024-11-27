@@ -75,7 +75,7 @@ var code = {
                 	creep.moveTo(targets[0],{reusePath: 20})
                 }
                 if(trytest == ERR_NOT_ENOUGH_RESOURCES) {
-                    creep.moveTo(0,0,{reusePath: 20})
+                    creep.moveTo(9,5,{reusePath: 20})
                 }
 			} else {
 				// Register the creep to a source if not already registered

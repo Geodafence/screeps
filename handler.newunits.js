@@ -69,6 +69,19 @@ var code = {
                 }
             }
         }
+        if(global.isextractor) {
+            if(Game.spawns[spawnname].room.energyAvailable >= buildercost) { 
+                if(Memory.spawns[spawnname].minharvs && (Memory.haulers.length >= global.haulercreations || Memory.longrangemining[4].creeps.length !== 0)) {
+                    if(Memory.spawns[spawnname].minharvs.length < 2) {
+                        if(Game.spawns[spawnname].spawning === null) {
+                            global.createdunit = 1
+                            code.createminharv(allmodules, spawnname)
+                            return
+                        }
+                    }
+                }
+            }
+        }
         allstores = Memory.storecache
         if(global.inDeficit == 1) {
             allstores = global.deficitLevel
@@ -112,6 +125,19 @@ var code = {
                 }
             }
         }
+    },
+    createminharv: function(modules, spawnname) {
+        var test = assign.newid()
+        var errorreg = Game.spawns[spawnname].spawnCreep(modules, test, {
+            memory: {level: Memory.harvlevel}
+        })
+        if(errorreg == 0) {
+            if(Memory.spawns[spawnname].minharvs === undefined) {
+                Memory.spawns[spawnname].minharvs = []
+            }
+            Memory.spawns[spawnname].minharvs.push(test)
+        }
+        return errorreg
     },
     createharv: function(modules, spawnname) {
         var test = assign.newid()
@@ -195,7 +221,7 @@ var code = {
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
         ] 
-        var milestones = {20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY]}
+        var milestones = {20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY],30:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY]}
         if(global.inDeficit == 1) {
             allstores = global.deficitLevel
         }
@@ -215,7 +241,7 @@ var code = {
             }
         }
         if(Memory.haulerlevel <= allstores) {
-            if((Math.ceil(Memory.haulerneeded/(allmodules.length/2))-3) >= Memory.haulers.length) {
+            if((Math.ceil((Memory.haulerneeded+(allmodules.length/2))/(allmodules.length/2)))-2 >= Memory.haulers.length) {
                 global.restartEco = spawnname
             } else {
                 global.restartEco = undefined
