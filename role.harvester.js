@@ -11,7 +11,7 @@ var roleHarvester = {
         new RoomVisual(creep.room.name).text('Harvester, state: '+creep.memory.state, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'yellow',stroke:"white",strokeWidth:0.01}); 
 	    if(creep.memory.state == "mining") {
             if(creep.memory.registeredsource === undefined || creep.memory.registeredsource == 0) {
-                creep.moveTo(0,0,{reusePath: 200})
+                creep.moveTo(9,5,{reusePath: 200})
             }
             register.register("usedsources", creep)
             register.harvest(creep)

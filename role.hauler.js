@@ -113,7 +113,7 @@ var code = {
                 }
                 if(Game.getObjectById(creep.memory.cachTarget)) {
                     if(creep.pickup(Game.getObjectById(creep.memory.cachTarget)) == ERR_NOT_IN_RANGE) {
-                        creep.moveTo(Game.getObjectById(creep.memory.cachTarget),{reusePath: 40,visualizePathStyle: {stroke: '#ffffff'}});
+                        creep.moveTo(Game.getObjectById(creep.memory.cachTarget),{reusePath: creep.dynamicReuse(),visualizePathStyle: {stroke: '#ffffff'}});
                     }
                 } else {
                     creep.memory.endearly += 1

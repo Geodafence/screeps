@@ -89,3 +89,9 @@ Creep.prototype.placeRoadByPath = function(path,Suceedstorage) {
     }
     this.memory["_"+Suceedstorage]={p:path,s:t}
 }
+Creep.prototype.dynamicReuse = function() {
+    let re = 40
+    if(this.pos.findInRange(FIND_CREEPS,2).length>0) re = 10
+    if(this.pos.findInRange(FIND_CREEPS,2).length>2) re = 5
+    return
+}

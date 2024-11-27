@@ -79,7 +79,7 @@ var code = {
                             if (creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {
                                 let alreadyrequested = -1
                                 for (let temp in Memory.defenserequests) {
-                                    if (Memory.defenserequests[temp].room == creep.memory.room.name) {
+                                    if (Memory.defenserequests[temp].room == creep.room.name) {
                                         alreadyrequested = 1
                                     }
                                 }

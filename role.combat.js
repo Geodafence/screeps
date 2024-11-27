@@ -55,16 +55,13 @@ function combatCalc(creep,target) {
             creep.moveTo(target)
             }
         creep.say("RANGED_ATTACK")
-    } else {
+    }
         if(creep.getActiveBodyparts(ATTACK) > 0) {
-            if(creep.attack(target) == ERR_NOT_IN_RANGE) {
+            if((creep.attack(target) == ERR_NOT_IN_RANGE)) {
                 creep.moveTo(target)
                 creep.say("ATTACK")
             }
-        } else {
-            creep.move(reverseDirectionTo(target))
         }
-    }
     
 }
 var code = {
