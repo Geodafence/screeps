@@ -6,11 +6,12 @@ var code = {
         return Game.spawns[ref].room.find(FIND_SOURCES).length+1;
     },
     newharvcheck: function(spawnname) {
-        if(global.defenseNeeded == 1 || global.createdunit == 1) {
+        if(global.defenseNeeded >= 1 || global.createdunit == 1) {
             return
         }
         var neededharvs = code.checkharvwant(spawnname)
         var allstores = Memory.storecache
+        let allstorescheck = Memory.storecache
         var allmodules
         var buildercost
         var allmodulelevels = [
@@ -26,6 +27,7 @@ var code = {
         }
         if(Game.spawns[spawnname].room.controller.level == 1 || (Memory.haulers.length < 2)) {
             allstores = 0
+            allstorescheck = allstores
         }
         if(global.inDeficit == 1) {
             allstores = global.deficitLevel
@@ -69,9 +71,29 @@ var code = {
                 }
             }
         }
+        allmodulelevels = [
+            [MOVE,CARRY,WORK], 
+            [MOVE,MOVE,CARRY,WORK,WORK],
+            [MOVE,MOVE,CARRY,CARRY,WORK,WORK],
+            [MOVE,MOVE,MOVE,CARRY,WORK,WORK],
+            [MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,WORK,WORK],
+            [MOVE,MOVE,MOVE,CARRY,CARRY,WORK,WORK,WORK],
+        ] 
+        var milestones = {25:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY]}
+        allmodules = allmodulelevels[allstores]
+        buildercost = funcs.partcost(allmodules)
+        for(am in milestones) {
+            if(Game.spawns[spawnname].room.controller.level != 1 && allstorescheck >= am) {
+                allmodules = milestones[am]
+                buildercost = funcs.partcost(allmodules)
+            }
+        }
         if(global.isextractor) {
             if(Game.spawns[spawnname].room.energyAvailable >= buildercost) { 
-                if(Memory.spawns[spawnname].minharvs && (Memory.haulers.length >= global.haulercreations || Memory.longrangemining[4].creeps.length !== 0)) {
+                if(Memory.spawns[spawnname].minharvs === undefined) {
+                    Memory.spawns[spawnname].minharvs = []
+                }
+                if(Memory.spawns[spawnname].minharvs && (Memory.haulers.length >= global.haulercreations && Memory.longrangemining[4].creeps.length !== 0)) {
                     if(Memory.spawns[spawnname].minharvs.length < 2) {
                         if(Game.spawns[spawnname].spawning === null) {
                             global.createdunit = 1
@@ -86,7 +108,7 @@ var code = {
         if(global.inDeficit == 1) {
             allstores = global.deficitLevel
         }
-        let allstorescheck = Memory.storecache
+        allstorescheck = Memory.storecache
         allmodulelevels = [
             [MOVE,MOVE,WORK,WORK], 
             [MOVE,WORK,WORK,WORK],
@@ -99,7 +121,7 @@ var code = {
             [MOVE,MOVE,WORK,WORK,WORK,WORK,WORK],
             [MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK],
         ] 
-        var milestones = {20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK]}
+        milestones = {20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK]}
         if(allmodulelevels.length-1 < allstores) {
             allstores = allmodulelevels.length-1
         }
@@ -115,7 +137,7 @@ var code = {
                 buildercost = funcs.partcost(allmodules)
             }
         }
-        if(Memory.storedcreeps.length == 0 && Game.spawns[spawnname].memory.builderallocations.upgrade == 2 && (Memory.haulers.length >= global.haulercreations || Memory.longrangemining[0].creeps.length == 0)) {
+        if(Memory.storedcreeps.length == 0 && Game.spawns[spawnname].memory.builderallocations.upgrade == 2 && (Memory.haulers.length >= global.haulercreations)) {
             if(Game.spawns[spawnname].room.energyAvailable >= buildercost) {
                 if(Game.spawns[spawnname].spawning === null) {
                     console.log("I require miner")
@@ -160,7 +182,7 @@ var code = {
         return Game.spawns[ref].room.find(FIND_SOURCES).length*2+1
     },
     newbuildcheck: function(spawnname) {
-        if(global.createdunit == 1 || global.defenseNeeded == 1) {
+        if(global.createdunit == 1 || global.defenseNeeded >= 1) {
             return
         }
         var allstores = Memory.storecache
@@ -197,7 +219,7 @@ var code = {
         }
     },
     newhaulercheck: function(spawnname) {
-        if(global.createdunit == 1 || global.defenseNeeded == 1) {
+        if(global.createdunit == 1 || global.defenseNeeded >= 1) {
             return
         }
         var allstores = Memory.storecache
@@ -221,14 +243,18 @@ var code = {
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
         ] 
-        var milestones = {20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY],30:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY]}
+        var milestones = {
+            20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY],
+            //return on investment doesn't appear to be worthwhile here
+            //30:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY]
+        }
         if(global.inDeficit == 1) {
             allstores = global.deficitLevel
         }
         if(allmodulelevels.length-1 < allstores) {
             allstores = allmodulelevels.length-1
         }
-        if(Game.spawns[spawnname].room.controller.level == 1|| (Memory.haulers.length < 3)) {
+        if(Game.spawns[spawnname].room.controller.level == 1|| (Memory.haulers.length < 4)) {
             allstores = 0
             allstorescheck = allstores
         }
@@ -240,13 +266,13 @@ var code = {
                 buildercost = funcs.partcost(allmodules)
             }
         }
-        if(Memory.haulerlevel <= allstores) {
+        if(Memory.haulerlevel <= Memory.storecache) {
             if((Math.ceil((Memory.haulerneeded+(allmodules.length/2))/(allmodules.length/2)))-2 >= Memory.haulers.length) {
                 global.restartEco = spawnname
             } else {
                 global.restartEco = undefined
             }
-            Memory.haulerlevel = allstores
+            Memory.haulerlevel = Memory.storecache
             if(Game.spawns[spawnname].room.energyAvailable >= buildercost && Memory.haulers.length < Math.ceil((Memory.haulerneeded+(allmodules.length/2))/(allmodules.length/2))) {
             if(code.checkbuildwant(spawnname) <= Memory.spawns[spawnname].builders.length &&(Memory.haulers.length < 3 || (Memory.spawns[spawnname].queen !== undefined||Game.spawns[spawnname].room.controller.level <= 3))) {
                 if((code.checkharvwant(spawnname) <= Memory.spawns[spawnname].harvesters.length)) {
@@ -304,9 +330,9 @@ var code = {
             }
         }
         Memory.combatlevel = allstores
-        if((Game.spawns[spawnname].room.energyAvailable >= buildercost) && (Memory.storedcreeps.length >= 1|| global.defenseNeeded == 1)) {
-            if((code.checkbuildwant(spawnname)<= Memory.spawns[spawnname].builders.length && Memory.fighters.length < 12)|| global.defenseNeeded == 1) {
-                if((code.checkharvwant(spawnname) <= Memory.spawns[spawnname].harvesters.length)|| global.defenseNeeded == 1) {
+        if((Game.spawns[spawnname].room.energyAvailable >= buildercost) && (Memory.storedcreeps.length >= 1|| global.defenseNeeded >= 1)) {
+            if((code.checkbuildwant(spawnname)<= Memory.spawns[spawnname].builders.length && Memory.fighters.length < 12)|| global.defenseNeeded >= 1) {
+                if((code.checkharvwant(spawnname) <= Memory.spawns[spawnname].harvesters.length)|| global.defenseNeeded >= 1) {
                     if(Game.spawns[spawnname].spawning == null) {
                         global.createdunit = 1
                         console.log(code.createcombat(spawnname, allmodules))
