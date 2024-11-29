@@ -86,7 +86,7 @@ var code = {
                                 if (alreadyrequested == -1) {
                                     Memory.defenserequests.push({ x: creep.pos.x, y: creep.pos.y, room: creep.room.name })
                                 }
-                                global.defenseNeeded = 1
+                                global.defenseNeeded = 20
                             }
                             // If the creep's energy is not full and it should be mining
                             if (creep.memory.state !== "moving") {

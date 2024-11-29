@@ -75,7 +75,7 @@ var code = {
             Memory.defenserequests.push({x:creep.pos.x,y:creep.pos.y,room:creep.room.name})
             }
             creep.memory.endearly += 1
-            global.defenseNeeded = 1
+            global.defenseNeeded = 20
             return
         }
         if((creep.memory.targetCreeps.length > 0 && creep.memory.targetCreeps[0] in Game.creeps)) {

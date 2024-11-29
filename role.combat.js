@@ -98,6 +98,7 @@ var code = {
                 let respond = Memory.defenserequests.pop()
                 creep.memory.TX = respond.x; creep.memory.TY = respond.y
                 creep.memory.roomname = respond.room
+                creep.memory.defenseoverride = 1
             }
             if(creep.memory.roomname === undefined) creep.memory.roomname = Game.creeps[creep.memory.targetCreep].room.name
             if(creep.memory.TX === undefined) {

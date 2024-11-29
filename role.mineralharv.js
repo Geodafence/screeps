@@ -7,7 +7,7 @@ var roleHarvester = {
         if(creep.memory.state === undefined) {
             creep.memory.state = "mining"
         }
-        new RoomVisual(creep.room.name).text('Harvester, state: '+creep.memory.state, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'yellow',stroke:"white",strokeWidth:0.01}); 
+        new RoomVisual(creep.room.name).text('Mineral Harvester, state: '+creep.memory.state, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'white',stroke:"white",strokeWidth:0.01}); 
 	    if(creep.memory.state == "mining") {
             var mine = creep.room.find(FIND_MINERALS)[0]
             if(creep.harvest(mine) == ERR_NOT_IN_RANGE) {
