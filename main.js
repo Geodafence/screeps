@@ -76,10 +76,12 @@ module.exports.loop = function () {
                 }
             }
         }
-        Memory.haulerneeded = (Math.round(full/2.5))
+        let multi=0
+        for(key in Game.spawns) multi+=1
+        Memory.haulerneeded = (Math.round((full)/2.5))
         global.updatecache = 0
     }
-    if(global.defenseNeeded == 1) {
+    if(global.defenseNeeded >= 1) {
         console.log("defense required")
     }
 
@@ -97,6 +99,7 @@ module.exports.loop = function () {
             currentspawn.memory = {
                 harvesters: [],
                 builders: [],
+                itemrequests: [],
                 builderallocations: { upgrade: 0, buildRoad: 0, general: 0 }
             }
         }
@@ -163,7 +166,7 @@ module.exports.loop = function () {
         unithandler.newbuildcheck(spawnid);
         unithandler.newhaulercheck(spawnid);
         unithandler.newcombatcheck(spawnid);
-        global.defenseNeeded = 0
+        global.defenseNeeded -=1
         // Run through each harvester in memory and execute its tasks
 
         // ||||||||||||||||||||||
@@ -182,14 +185,14 @@ module.exports.loop = function () {
 
         if(currentspawn.memory.queen !== undefined) {
             if(currentspawn.memory.queen in Game.creeps) {
-                queencode.tick(Game.creeps[currentspawn.memory.queen])
+                queencode.tick(Game.creeps[currentspawn.memory.queen],"queen1")
             } else {
                 currentspawn.memory.queen = undefined
             }
         }
         if(currentspawn.memory.queen2 !== undefined) {
             if(currentspawn.memory.queen2 in Game.creeps) {
-                queencode.tick(Game.creeps[currentspawn.memory.queen2])
+                queencode.tick(Game.creeps[currentspawn.memory.queen2],"queen2")
             } else {
                 currentspawn.memory.queen2 = undefined
             }
@@ -360,7 +363,7 @@ function combatforeach(item) {
         }
     }
 }
-function minharvsforeach(item) {
+function minharvsforeach(item,spawntype) {
     if(item in Game.creeps) {
             // Renew hauler if it's near the end of its lifespan
             // Execute hauler tasks
@@ -368,10 +371,10 @@ function minharvsforeach(item) {
     } else {
         // Remove harvester from memory if it no longer exists
         Memory.creeps[item] = undefined;
-        const index = Memory.minharvs.indexOf(item);
+        const index = Game.spawns[spawntype].memory.minharvs.indexOf(item);
         if (index > -1) {
             console.log("epic");
-            Memory.minharvs.splice(index, 1); 
+            Game.spawns[spawntype].memory.minharvs.splice(index, 1); 
         }
     }
 }
