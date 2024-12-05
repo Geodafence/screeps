@@ -14,7 +14,10 @@ var roleHarvester = {
                 creep.moveTo(9,5,{reusePath: 200})
             }
             register.register("usedsources", creep)
-            register.harvest(creep)
+            let err = register.harvest(creep)
+            if(err == ERR_NOT_ENOUGH_RESOURCES) {
+                creep.moveTo(9,5,{reusePath: 200})
+            }
             if(creep.store.getFreeCapacity() == 0) creep.memory.state = "storing"
         } else {
             if(creep.store[RESOURCE_ENERGY] == 0) {
