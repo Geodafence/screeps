@@ -39,7 +39,7 @@ var code = {
                             // Move an existing creep to the room to estimate the required miners
                             let creep = Game.creeps[Memory.longrangemining[temp].creeps[0]];
                             let roompos = new RoomPosition(25, 25, RoomObject.room);
-                            creep.moveTo(roompos, { reusePath: 200, visualizePathStyle: { stroke: '#ffffff' } });
+                            creep.moveTo(roompos, { reusePath: 40, visualizePathStyle: { stroke: '#ffffff' } });
 
                             // Once the creep is in the target room, determine the number of mining sources
                             if (creep.room.name == RoomObject.room) {
@@ -92,7 +92,7 @@ var code = {
                             if (creep.memory.state !== "moving") {
                                 if (creep.room.name != RoomObject.room) {
 
-                                    creep.moveTo(new RoomPosition(25, 25, RoomObject.room), { reusePath: 200, visualizePathStyle: { stroke: '#ffffff' } });
+                                    creep.moveTo(new RoomPosition(25, 25, RoomObject.room), { reusePath: 40, visualizePathStyle: { stroke: '#ffffff' } });
                                     if(creep.memory._move) {
                                         creep.placeRoadByPath(creep.memory._move.path,"LRMmid")
                                     }
@@ -111,7 +111,16 @@ var code = {
                                         }
                                         if (creep.store[RESOURCE_ENERGY] > 40) {
                                             creep.memory.check = 1
-                                            creep.drop(RESOURCE_ENERGY)
+                                            let linkmining = creep.pos.findInRange(FIND_MY_STRUCTURES,3,{filter: function(structure) {
+                                                return structure.structureType===STRUCTURE_LINK
+                                            }})
+                                            if(linkmining.length>0) {
+                                                if(creep.transfer(linkmining[0],RESOURCE_ENERGY)===ERR_NOT_IN_RANGE) {
+                                                    creep.moveTo(linkmining[0])
+                                                }
+                                            } else {
+                                                creep.drop(RESOURCE_ENERGY)
+                                            }
                                         }
                                     } else {
                                         register.remove("sources", creep, true, Memory.longrangemining[temp]);

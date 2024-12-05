@@ -27,7 +27,8 @@ Memory.miningrooms = [
     {room: "E52S19", usedSegment: 0},
     {room: "E53S17", usedSegment: 0},
     {room: "E53S18", usedSegment: 0},
-    {room: "E51S19", usedSegment: 0}
+    {room: "E51S19", usedSegment: 0},
+    {room: "E51S18", usedSegment: 0}
 ];
 global.nextupdate = [];
 global.nexttick = [];
@@ -43,6 +44,8 @@ var minercode = require("role.longrangeminer");
 var funcs = require("general.functions");
 var haulercode = require("role.hauler")
 var minharv = require("role.mineralharv")
+var terminal = require("terminalCalculator")
+var linkcode = require("structure.link")
 require("./spawnUtils")
 var queencode = require("role.queen");
 const { isUndefined } = require('lodash');
@@ -56,7 +59,7 @@ module.exports.loop = function () {
     if(Game.cpu.bucket < 500) {
         console.log("extremely low cpu bucket, terminating")
         return
-    }//
+    }
     Memory.haulerlevel = 0
     global.fixticks += 1
     global.updatecache += 1
@@ -89,6 +92,20 @@ module.exports.loop = function () {
     for(temp in Memory.longrangemining) {
         global.haulercreations += Memory.longrangemining[temp].creeps.length
     }
+    //Gather info on which spawn for haulers to focus on
+    global.haulerfocus=0
+    let grab = 0
+    let info = 1000000000000000
+    for(let temp in Game.spawns) {
+        let spawn = Game.spawns[temp]
+        if(spawn.room.storage) {
+            if(spawn.room.storage.store[RESOURCE_ENERGY]<info&&(spawn.memory.queen!==undefined||spawn.memory.queen2!==undefined)) {
+                grab=temp
+                info=spawn.room.storage.store[RESOURCE_ENERGY]
+            }
+        }
+    }
+    global.haulerfocus=grab
     // Loop through each spawn and manage units and tasks
     for(let spawnid in Game.spawns) {
 
@@ -122,42 +139,53 @@ module.exports.loop = function () {
                 return (structure.structureType == STRUCTURE_TOWER)
             }
         });
-        for(let towerold in towers) {
-            let tower = towers[towerold]
-            let attackers = tower.room.find(FIND_HOSTILE_CREEPS)
-            if(attackers.length > 0) {
-                attackers.sort((a, b) => b.hits - a.hits);
-                tower.attack(attackers[0])
-            } else {
-                let targets = tower.room.find(FIND_STRUCTURES, {
-                    filter: object => object.hits < object.hitsMax*0.75
-                });
-                
-                // Sort by damage level (most damaged first)
-                targets.sort((a, b) => a.hits - b.hits);
-                
-                // If damaged structures are found, repair the closest one
-                if(targets.length > 0) {
-                    tower.repair(targets[0])
+        if(Game.cpu.bucket < 2000) {
+            console.log("low bucket, disabling non-needed codebases")
+        }
+            for(let towerold in towers) {
+                let tower = towers[towerold]
+                let attackers = tower.room.find(FIND_HOSTILE_CREEPS)
+                if(attackers.length > 0) {
+                    attackers.sort((a, b) => b.hits - a.hits);
+                    tower.attack(attackers[0])
+                } else {
+                    let targets = tower.room.find(FIND_STRUCTURES, {
+                        filter: object => object.hits < object.hitsMax*0.75
+                    });
+                    
+                    // Sort by damage level (most damaged first)
+                    targets.sort((a, b) => a.hits - b.hits);
+                    
+                    // If damaged structures are found, repair the closest one
+                    if(targets.length > 0) {
+                        tower.repair(targets[0])
+                    }
                 }
+                
             }
-            
+        let alllinks = currentspawn.room.find(FIND_MY_STRUCTURES,{filter: function(structure) {
+            return structure.structureType === STRUCTURE_LINK
+        }})
+        for(let I in alllinks) {
+            linkcode.tick(alllinks[I])
         }
         // Set cache to 0 if the controller level is 1
         if(currentspawn.room.controller.level == 1) {
             Memory.storecache = 0;
         }
         global.kill = 0
-        if(currentspawn.room.controller.level > 2) {
-            let add = 0
-            for(let temp in Memory.miningrooms) {
-                let I = Memory.miningrooms[temp]
-                if(I.room ==currentspawn.room.name) {
-                    add = 1
+        if(Game.cpu.bucket >= 2000) {
+            if(currentspawn.room.controller.level > 2) {
+                let add = 0
+                for(let temp in Memory.miningrooms) {
+                    let I = Memory.miningrooms[temp]
+                    if(I.room ==currentspawn.room.name) {
+                        add = 1
+                    }
                 }
-            }
-            if(add == 0) {
-                Memory.miningrooms.push({room:currentspawn.room.name, usedSegment: 0})
+                if(add == 0) {
+                    Memory.miningrooms.push({room:currentspawn.room.name, usedSegment: 0})
+                }
             }
         }
         // Check for new harvester, builder, and combat units
@@ -168,7 +196,13 @@ module.exports.loop = function () {
         unithandler.newcombatcheck(spawnid);
         global.defenseNeeded -=1
         // Run through each harvester in memory and execute its tasks
-
+        try {
+            for(let I in Memory.haulers) {
+                if(Game.creeps[Memory.haulers[I]].ticksToLive<1000) {
+                    currentspawn.renewCreep(Game.creeps[Memory.haulers[I]])
+                }
+            }
+        } catch(e) {}
         // ||||||||||||||||||||||
         // run for each unit type
         // ||||||||||||||||||||||
@@ -179,10 +213,11 @@ module.exports.loop = function () {
         if(Game.spawns[spawnid].memory.builders.length > 0) {
             Game.spawns[spawnid].memory.builders.forEach(item => builderforeach(item, spawnid));
         }
-        if(currentspawn.memory.minharvs) {
-            Game.spawns[spawnid].memory.minharvs.forEach(item => minharvsforeach(item, spawnid));
+        if(Game.cpu.bucket >= 2000) {
+            if(currentspawn.memory.minharvs) {
+                Game.spawns[spawnid].memory.minharvs.forEach(item => minharvsforeach(item, spawnid));
+            }
         }
-
         if(currentspawn.memory.queen !== undefined) {
             if(currentspawn.memory.queen in Game.creeps) {
                 queencode.tick(Game.creeps[currentspawn.memory.queen],"queen1")
@@ -190,46 +225,51 @@ module.exports.loop = function () {
                 currentspawn.memory.queen = undefined
             }
         }
-        if(currentspawn.memory.queen2 !== undefined) {
-            if(currentspawn.memory.queen2 in Game.creeps) {
-                queencode.tick(Game.creeps[currentspawn.memory.queen2],"queen2")
-            } else {
-                currentspawn.memory.queen2 = undefined
+        if(Game.cpu.bucket >= 2000) {
+            if(currentspawn.memory.queen2 !== undefined) {
+                if(currentspawn.memory.queen2 in Game.creeps) {
+                    queencode.tick(Game.creeps[currentspawn.memory.queen2],"queen2")
+                } else {
+                    currentspawn.memory.queen2 = undefined
+                }
             }
+            if(currentspawn.room.terminal!==undefined) {
+                terminal.tick(currentspawn.room.terminal)
+        }
         }
     }
     if(Memory.haulers.length > 0) {
-        Memory.haulers.forEach(item => haulerforeach(item));
+        Memory.haulers.forEach(item => haulerforeach(item,global.haulerfocus));
     }
-
-    for(temp in Memory.claimers) {
-        let claimer = Game.creeps[Memory.claimers[temp]]
-        if(claimer === undefined) {
-            Memory.claimers = funcs.Lremove(Memory.claimers,temp)
-            continue
-        }
-        if(claimer.memory.reserving !== undefined) {
-            if(claimer.room.name !== claimer.memory.reserving) {
-                claimer.moveTo(new RoomPosition(25,25,claimer.memory.reserving),{reusePath:40})
-            } else {
-                let check = claimer.room.find(FIND_STRUCTURES,{filter: function(structure) {
-                    return structure.structureType == STRUCTURE_CONTROLLER
-                }})
-                if(check) {
-                    if(claimer.reserveController(check[0]) == ERR_NOT_IN_RANGE) claimer.moveTo(check[0])
-                }
+    if(Game.cpu.bucket >= 2000) {
+        for(temp in Memory.claimers) {
+            let claimer = Game.creeps[Memory.claimers[temp]]
+            if(claimer === undefined) {
+                Memory.claimers = funcs.Lremove(Memory.claimers,temp)
+                continue
             }
-        }   
-    }
-    for(temp in Memory.longRangeBuilders) {
-        let Lbuilder  = Memory.longRangeBuilders[temp]
-        if(Game.creeps[Lbuilder] === undefined) {
-            Memory.longRangeBuilders = funcs.Lremove(Memory.longRangeBuilders,temp)
-            continue
+            if(claimer.memory.reserving !== undefined) {
+                if(claimer.room.name !== claimer.memory.reserving) {
+                    claimer.moveTo(new RoomPosition(25,25,claimer.memory.reserving),{reusePath:40})
+                } else {
+                    let check = claimer.room.find(FIND_STRUCTURES,{filter: function(structure) {
+                        return structure.structureType == STRUCTURE_CONTROLLER
+                    }})
+                    if(check) {
+                        if(claimer.reserveController(check[0]) == ERR_NOT_IN_RANGE) claimer.moveTo(check[0])
+                    }
+                }
+            }   
         }
-        longbuild.tick(Game.creeps[Lbuilder])
+        for(temp in Memory.longRangeBuilders) {
+            let Lbuilder  = Memory.longRangeBuilders[temp]
+            if(Game.creeps[Lbuilder] === undefined) {
+                Memory.longRangeBuilders = funcs.Lremove(Memory.longRangeBuilders,temp)
+                continue
+            }
+            longbuild.tick(Game.creeps[Lbuilder])
+        }
     }
-
     // Run the miner code for long-range mining logic
     minercode.tick();
     // ||||||||||||||||||||||
@@ -297,11 +337,11 @@ function harvesterforeach(item, spawntype) {
 }
 
 // Function to handle tasks for each hauler
-function haulerforeach(item) {
+function haulerforeach(item,focuson) {
     if(item in Game.creeps) {
             // Renew hauler if it's near the end of its lifespan
             // Execute hauler tasks
-            haulercode.tick(Game.creeps[item]);
+            haulercode.tick(Game.creeps[item],focuson);
     } else {
         // Remove harvester from memory if it no longer exists
         Memory.creeps[item] = undefined;

@@ -1,5 +1,30 @@
 var request = require("item-request-lib")
+var funcs = require("general.functions")
+/**
+ * 
+ * @param {*} masterSpawn 
+ * @returns {StructureLink}
+ */
+function getMasterLink(masterSpawn) {
+    let links = masterSpawn.room.find(FIND_MY_STRUCTURES,{filter: function(structure) {
+        return structure.structureType === STRUCTURE_LINK
+    }})
+    let link = 0
+    let range = 999999
+    for(let I in links) {
+        if(funcs.getTrueDistance(links[I].pos,masterSpawn.pos)<range) {
+            range = funcs.getTrueDistance(links[I].pos,masterSpawn.pos)
+            link = links[I]
+        }
+    }
+    return link
+}
 var code = {
+    /**
+     * 
+     * @param {Creep} creep 
+     * @param {*} queenType 
+     */
     tick: function(creep,queenType) {
         if(creep.store[RESOURCE_ENERGY] == creep.store.getCapacity()&&creep.memory.fufilling===undefined) {
             creep.memory.state = "moving"
@@ -8,9 +33,11 @@ var code = {
             creep.memory.state = "grabbing"
         }
         if(creep.memory.state == "grabbing") {
-        request.fufillrequest(creep)
+            try {
+                request.fufillrequest(creep)
+            } catch(e) {}
         }
-        if(creep.memory.fufilling===undefined) {
+        if(creep.memory.fufilling===undefined||creep.memory.state == "moving") {
         if(creep.memory.state == "grabbing") {
             var target = Game.getObjectById(creep.memory.spawnid).room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
@@ -18,13 +45,19 @@ var code = {
                 }
             })
             if(target) {
-                target = target[0]
-                if(creep.withdraw(target,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target,{reusePath: 20})
+                let amog = getMasterLink(creep.room.getMasterSpawn())
+                if(amog) {
+                    if(amog.store[RESOURCE_ENERGY]>creep.store.getCapacity()) {
+                        target = [getMasterLink(creep.room.getMasterSpawn())]
+                    }
                 }
-                if(creep.withdraw(target,RESOURCE_ENERGY) == ERR_NOT_ENOUGH_RESOURCES) {
-                    request.getrequest(creep)
-                }
+                    target = target[0]
+                    if(creep.withdraw(target,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(target,{reusePath: 20})
+                    }
+                    if(creep.withdraw(target,RESOURCE_ENERGY) == ERR_NOT_ENOUGH_RESOURCES) {
+                        request.getrequest(creep)
+                    }
             }
         } else {
             var target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
@@ -33,36 +66,40 @@ var code = {
                         structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
                 }
             })
+            if(creep.room.find(FIND_STRUCTURES, {
+                filter: object => object.hits < 2000&&object.structureType===STRUCTURE_RAMPART
+            }).length>0) {
+                console.log("emergancy rampart repair online for "+Game.getObjectById(creep.memory.spawnid).name)
+                var target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+                    filter: (structure) => {
+                        return (structure.structureType == STRUCTURE_TOWER) &&
+                            structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                    }
+                })
+            }
             if(target) {
-                if(target.length < 5) {
-                    target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-                        filter: (structure) => {
-                            return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN|| structure.structureType == STRUCTURE_TOWER) &&
-                                structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-                        }
-                    })
-                }
             } else {
                 target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                     filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN|| structure.structureType == STRUCTURE_TOWER) &&
+                        return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_TOWER) &&
                             structure.store.getFreeCapacity(RESOURCE_ENERGY) > 500;
                     }
                 })
+                if(!target) {
+                    request.getrequest(creep)
+                }
+                
             }
             let check = creep.room.find(FIND_HOSTILE_CREEPS);
             if(check.length > 0) {
                 target = creep.pos.findClosestByRange(FIND_STRUCTURES, { filter: (structure) => {
-                    return structure.structureType == STRUCTURE_TOWER
+                    return structure.structureType == STRUCTURE_TOWER&&structure.store.getFreeCapacity(RESOURCE_ENERGY) > 500;
                 }
             })
             }
             if(target) {
-                if(target.structureType==STRUCTURE_TOWER) {
-                    request.getrequest(creep)
-                }
-                if(creep.transfer(target,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target,{reusePath: 20})
+                if(creep.transfer(target,RESOURCE_ENERGY) !== OK) {
+                    creep.moveTo(target,{reusePath: 10})
                 }
             }
         }
