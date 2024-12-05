@@ -25,7 +25,7 @@ var code = {
         if(allmodulelevels.length-1 < allstores) {
             allstores = allmodulelevels.length-1
         }
-        if(Game.spawns[spawnname].room.controller.level == 1 || (Memory.haulers.length < 2)) {
+        if(Game.spawns[spawnname].room.controller.level == 1 || (Memory.haulers.length < 2) || Game.spawns[spawnname].memory.harvesters.length < 2) {
             allstores = 0
             allstorescheck = allstores
         }
@@ -93,8 +93,8 @@ var code = {
                 if(Memory.spawns[spawnname].minharvs === undefined) {
                     Memory.spawns[spawnname].minharvs = []
                 }
-                if(Memory.spawns[spawnname].minharvs && (Memory.haulers.length >= global.haulercreations && Memory.longrangemining[4].creeps.length !== 0)) {
-                    if(Memory.spawns[spawnname].minharvs.length < 2) {
+                if(Memory.spawns[spawnname].minharvs && (Memory.haulers.length >= global.haulercreations && Memory.longrangemining[4].creeps.length !== 0)&&(Memory.spawns[spawnname].queen2&&Memory.spawns[spawnname].queen)) {
+                    if(Memory.spawns[spawnname].minharvs.length < 1) {
                         if(Game.spawns[spawnname].spawning === null) {
                             global.createdunit = 1
                             code.createminharv(allmodules, spawnname)
@@ -121,7 +121,7 @@ var code = {
             [MOVE,MOVE,WORK,WORK,WORK,WORK,WORK],
             [MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK],
         ] 
-        milestones = {20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK]}
+        milestones = {20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,WORK,WORK,WORK,WORK,WORK,WORK]}
         if(allmodulelevels.length-1 < allstores) {
             allstores = allmodulelevels.length-1
         }
@@ -244,8 +244,8 @@ var code = {
             [CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],
         ] 
         var milestones = {
-            20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY],
-            //return on investment doesn't appear to be worthwhile here
+            20:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY],
+            //after testing again, return on investment is absolutely not worthwhile at this point in time
             //30:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY]
         }
         if(global.inDeficit == 1) {
@@ -262,17 +262,29 @@ var code = {
         buildercost = allmodules.length*50
         for(am in milestones) {
             if(Game.spawns[spawnname].room.controller.level != 1 && allstorescheck >= am) {
+                allstores=am
                 allmodules = milestones[am]
                 buildercost = funcs.partcost(allmodules)
             }
         }
+        if(Game.spawns[spawnname].room.energyAvailable >= buildercost) {
+            if(((Memory.spawns[spawnname].queen === undefined&&Memory.haulers.length>3) || (Memory.spawns[spawnname].queen2 === undefined&&global.restartEco===undefined))&& Game.spawns[spawnname].room.controller.level > 3&&Game.spawns[spawnname].room.storage) {
+                    if(Game.spawns[spawnname].spawning == null) {
+                        global.createdunit = 1
+                        code.createqueen(spawnname, allmodules)
+                        return
+                    }
+                }
+        }
         if(Memory.haulerlevel <= Memory.storecache) {
-            if((Math.ceil((Memory.haulerneeded+(allmodules.length/2))/(allmodules.length/2)))-2 >= Memory.haulers.length) {
+            if((Math.ceil((Memory.haulerneeded+(allmodules.length/2))/(allmodules.length/2)/3)) >= Memory.haulers.length) {
                 global.restartEco = spawnname
             } else {
                 global.restartEco = undefined
             }
+            
             Memory.haulerlevel = Memory.storecache
+
             if(Game.spawns[spawnname].room.energyAvailable >= buildercost && Memory.haulers.length < Math.ceil((Memory.haulerneeded+(allmodules.length/2))/(allmodules.length/2))) {
             if(code.checkbuildwant(spawnname) <= Memory.spawns[spawnname].builders.length &&(Memory.haulers.length < 3 || (Memory.spawns[spawnname].queen !== undefined||Game.spawns[spawnname].room.controller.level <= 3))) {
                 if((code.checkharvwant(spawnname) <= Memory.spawns[spawnname].harvesters.length)) {
@@ -285,18 +297,9 @@ var code = {
                 }
             }
         }
-        if(Game.spawns[spawnname].room.energyAvailable >= buildercost) {
-            if((Memory.spawns[spawnname].queen === undefined || (Memory.spawns[spawnname].queen2 === undefined&&global.restartEco===undefined))&& Game.spawns[spawnname].room.controller.level > 3) {
-                    if(Game.spawns[spawnname].spawning == null) {
-                        global.createdunit = 1
-                        code.createqueen(spawnname, allmodules)
-                        return
-                    }
-                }
-        }
     },
     newcombatcheck: function(spawnname) {
-        if(global.createdunit == 1) {
+        if((global.createdunit == 1|| global.defenseNeeded < 1)&&Game.flags.attack === undefined) {
             return
         }
         var allstores = Memory.storecache
@@ -312,7 +315,11 @@ var code = {
         [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,RANGED_ATTACK],
         [TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,ATTACK,RANGED_ATTACK]
         ]
-        var milestones = {20:[TOUGH,TOUGH,TOUGH,TOUGH,MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, TOUGH, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK,MOVE,HEAL],30:[TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL]}
+        var milestones = {
+            20:[TOUGH,TOUGH,TOUGH,TOUGH,MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, TOUGH, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK,MOVE,HEAL],
+            30:[TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL],
+            40:[TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,TOUGH,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,RANGED_ATTACK,HEAL,HEAL,HEAL]
+        }
         if(allmodulelevels.length-1 < allstores) {
             allstores = allmodulelevels.length-1
 
