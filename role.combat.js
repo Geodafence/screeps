@@ -1,42 +1,57 @@
-function reverseDirectionTo(target) {
-        let reverseDict = {
-                3: 7,          // RIGHT → LEFT
-                7: 3,          // LEFT → RIGHT
-                1: 5,          // TOP → BOTTOM
-                5: 1,          // BOTTOM → TOP
-                8: 4,          // TOP_LEFT → BOTTOM_LEFT
-                6: 8,          // BOTTOM_LEFT → TOP_LEFT
-                2: 4,          // TOP_RIGHT → BOTTOM_RIGHT
-                4: 2           // BOTTOM_RIGHT → TOP_RIGHT
-            }
-    return reverseDict[creep.pos.getDirectionTo(target)]
-}
+var funcs = require("general.functions");
+const { getTrueDistance } = require("./general.functions");
+function flee(creep, goal) {
+    let goals = [{ pos: goal.pos, range: 3 }];
+    let ret =  PathFinder.search(
+    creep.pos, goals,
+    {
+      // We need to set the defaults costs higher so that we
+      // can set the road cost lower in `roomCallback`
+      plainCost: 2,
+      swampCost: 10,
+      flee: true,
 
+      roomCallback: function(roomName) {
+
+        let room = Game.rooms[roomName];
+        // In this example `room` will always exist, but since 
+        // PathFinder supports searches which span multiple rooms 
+        // you should be careful!
+        if (!room) return;
+        let costs = new PathFinder.CostMatrix;
+
+        room.find(FIND_STRUCTURES).forEach(function(struct) {
+          if (struct.structureType === STRUCTURE_ROAD) {
+            // Favor roads over plain tiles
+            costs.set(struct.pos.x, struct.pos.y, 1);
+          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                     (struct.structureType !== STRUCTURE_RAMPART ||
+                      !struct.my)) {
+            // Can't walk through non-walkable buildings
+            costs.set(struct.pos.x, struct.pos.y, 0xff);
+          }
+        });
+
+        // Avoid creeps in the room
+        room.find(FIND_CREEPS).forEach(function(creep) {
+          costs.set(creep.pos.x, creep.pos.y, 0xff);
+        });
+
+        return costs;
+      },
+    }
+  );
+  let pos = ret.path[0];
+  creep.move(creep.pos.getDirectionTo(pos));
+  return ret
+}
 function combatCalc(creep,target) {
     if(creep.saying === undefined) {
         lastAction = 0
     } else {
         lastAction = creep.saying
     }
-    if(creep.getActiveBodyparts(HEAL) > 0) {
-        if(creep.hits < creep.hitsMax*0.75) {
-            if(lastAction != "HEAL" || creep.hits < creep.hitsMax*0.50) {
-                creep.heal(creep)
-                if(creep.pos.getRangeTo(target) < 8 && creep.hits < creep.hitsMax*0.50) {
-                    let hide = creep.pos.findInRange(FIND_MY_STRUCTURES, 6, {filter: (structure) => {
-                        return structure.structureType == STRUCTURE_RAMPART
-                    }})
-                    if(hide) {
-                        creep.moveTo(hide[0])
-                    } else {
-                        creep.move(reverseDirectionTo(target))
-                    }
-                }
-                creep.say("HEAL")
-                return
-            }
-        }
-        }
+
     if(creep.getActiveBodyparts(RANGED_ATTACK) > 0) {
             if(creep.pos.getRangeTo(target) < 3) {
                 let hide = creep.pos.findInRange(FIND_MY_STRUCTURES, 3, {filter: (structure) => {
@@ -45,10 +60,10 @@ function combatCalc(creep,target) {
                 if(hide.length > 0) {
                     creep.moveTo(hide[0])
                 } else {
-                    creep.move(reverseDirectionTo(target))
+                    flee(creep,target)
                 }
             }
-            if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3) > 1) {
+            if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3).length > 1) {
                 creep.rangedMassAttack()
             } else creep.rangedAttack(target)
             if(creep.pos.getRangeTo(target) > 3) {
@@ -65,15 +80,24 @@ function combatCalc(creep,target) {
     
 }
 var code = {
+    /**
+     * 
+     * @param {Creep} creep 
+     * @returns 
+     */
     run: function(creep) {
-        var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-        if (closestHostile) {
-            creep.memory.stopmoving = 0;
-            combatCalc(creep, closestHostile)
-            return
-        } 
+        if(creep.getActiveBodyparts(HEAL) > 0) {
+            if(creep.hits < creep.hitsMax*0.75) {
+                    creep.heal(creep)
+            }
+            }
         if(Game.flags.attack === undefined) {
-            if(creep.hits < creep.hitsMax) creep.heal(creep)
+            var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+            if (closestHostile) {
+                creep.memory.stopmoving = 0;
+                combatCalc(creep, closestHostile)
+                return
+            }
             // Patrolling behavior
             if (creep.memory.patrolling === undefined) {
                 var targetRoom;
@@ -99,6 +123,7 @@ var code = {
                 creep.memory.TX = respond.x; creep.memory.TY = respond.y
                 creep.memory.roomname = respond.room
                 creep.memory.defenseoverride = 1
+                creep.memory.wait=0
             }
             if(creep.memory.roomname === undefined) creep.memory.roomname = Game.creeps[creep.memory.targetCreep].room.name
             if(creep.memory.TX === undefined) {
@@ -118,13 +143,15 @@ var code = {
             theif = (Game.flags.attack.room.name !== creep.room.name)
         }
         if(theif) {
-            creep.moveTo(Game.flags.attack,{reusePath: 40,stroke: '#ff0000'})
+            creep.moveTo(Game.flags.attack,{reusePath: 200,stroke: '#ff0000'})
         } else {
             let target1 = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
             let target2 = creep.room.find(FIND_HOSTILE_STRUCTURES);
             for(const t in target2) {
                 I = target2[t]
-                if(I.structureType == STRUCTURE_TOWER) {
+                if(I.structureType == STRUCTURE_TOWER&&creep.room.find(FIND_HOSTILE_CREEPS,{filter: function(crep) {
+                    return crep.getActiveBodyparts(ATTACK) > 0|| crep.getActiveBodyparts(RANGED_ATTACK) > 0;
+                }}).length==0) {
                     target1 = null
                     target2 = [I]
                     break

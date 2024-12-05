@@ -1,17 +1,48 @@
-function reverseDirectionTo(target) {
-    let reverseDict = {
-            3: 7,          // RIGHT → LEFT
-            7: 3,          // LEFT → RIGHT
-            1: 5,          // TOP → BOTTOM
-            5: 1,          // BOTTOM → TOP
-            8: 6,          // TOP_LEFT → BOTTOM_LEFT
-            6: 8,          // BOTTOM_LEFT → TOP_LEFT
-            2: 4,          // TOP_RIGHT → BOTTOM_RIGHT
-            4: 2           // BOTTOM_RIGHT → TOP_RIGHT
-        }
-return reverseDict[creep.pos.getDirectionTo(target)]
-}
+function flee(creep, goal) {
+    let goals = { pos: goal.pos, range: 6 };
+    let ret =  PathFinder.search(
+    creep.pos, goals,
+    {
+      // We need to set the defaults costs higher so that we
+      // can set the road cost lower in `roomCallback`
+      plainCost: 2,
+      swampCost: 10,
+      flee: true,
 
+      roomCallback: function(roomName) {
+
+        let room = Game.rooms[roomName];
+        // In this example `room` will always exist, but since 
+        // PathFinder supports searches which span multiple rooms 
+        // you should be careful!
+        if (!room) return;
+        let costs = new PathFinder.CostMatrix;
+
+        room.find(FIND_STRUCTURES).forEach(function(struct) {
+          if (struct.structureType === STRUCTURE_ROAD) {
+            // Favor roads over plain tiles
+            costs.set(struct.pos.x, struct.pos.y, 1);
+          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                     (struct.structureType !== STRUCTURE_RAMPART ||
+                      !struct.my)) {
+            // Can't walk through non-walkable buildings
+            costs.set(struct.pos.x, struct.pos.y, 0xff);
+          }
+        });
+
+        // Avoid creeps in the room
+        room.find(FIND_CREEPS).forEach(function(creep) {
+          costs.set(creep.pos.x, creep.pos.y, 0xff);
+        });
+
+        return costs;
+      },
+    }
+  );
+  let pos = ret.path[0];
+  creep.move(creep.pos.getDirectionTo(pos));
+  return ret
+}
 const funcs = require("general.functions");
 const { isNull } = require("lodash");
 var code = {
@@ -23,10 +54,18 @@ var code = {
             }
         });
     },
-    tick: function(creep) {
+    /**
+     * 
+     * @param {Creep} creep 
+     * @returns 
+     */
+    tick: function(creep,focuson) {
         try {
         if(creep.store[RESOURCE_ENERGY] == 0) {
             creep.memory.moving = false;
+        }
+        if(creep.store[RESOURCE_OXYGEN] >= 0) {
+            creep.drop(RESOURCE_OXYGEN)
         }
         if (creep.memory.patrolling === undefined) {
             var targetRoom;
@@ -55,16 +94,23 @@ var code = {
             creep.memory.endearly = 0
         }
         if(isNull(Game.getObjectById(creep.memory.spawnid))||isNull(creep.memory.spawnid)) {
+            /*
+            new focus system allows for active balancing rather than randomizing
             let keys = []
             for (var key in Game.spawns) {
                 keys.push(key);
             }
             let val= Game.spawns[keys[Math.floor(Math.random()*keys.length)]].id
-            creep.memory.spawnid = val
+            if(val==="Spawn2") {
+                val= Game.spawns[keys[Math.floor(Math.random()*keys.length)]].id
+            }
+            */
+            let val = focuson
+            creep.memory.spawnid = Game.spawns[val].id
         }
         new RoomVisual(creep.room.name).text('Hauler, grabbing from room: '+creep.memory.patrolling.room, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'red',stroke:"white",strokeWidth:0.01}); 
         if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {
-            creep.move(reverseDirectionTo(creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, 5)))
+            flee(creep,creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, 5))
             let alreadyrequested = -1
             for(let temp in Memory.defenserequests) {
                 if(Memory.defenserequests[temp].room == creep.room.name) {
@@ -95,12 +141,12 @@ var code = {
             //    }
             //} else {
                 let move = new RoomPosition(25,25,creep.memory.patrolling.room)
-                creep.moveTo(move, {reusePath: 200, stroke: 'white'});
+                creep.moveTo(move, {reusePath: 40, stroke: 'white'});
            // }
         }  else if (creep.memory.moving == false) {
                 if(creep.memory.cachTarget === undefined || !Game.getObjectById(creep.memory.cachTarget)) {
                     let nullcheck = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES,{filter: (structure) => {
-                        return structure.amount >= creep.store.getCapacity()
+                        return structure.amount >= creep.store.getCapacity() && structure.resourceType===RESOURCE_ENERGY
                     }})
                     if(nullcheck !== null) {
                     creep.memory.cachTarget = nullcheck.id;
