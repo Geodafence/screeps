@@ -63,28 +63,29 @@ var code = {
                 }
             }
         } else {
-			var targets = creep.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_STORAGE) &&
-                        structure.store[RESOURCE_ENERGY] > 0;
-                }
-        	});
-			if(targets.length > 0) {
-                let trytest = creep.withdraw(targets[0],RESOURCE_ENERGY)
-            	if(trytest == ERR_NOT_IN_RANGE) {
-                	creep.moveTo(targets[0],{reusePath: 20})
-                }
-                if(trytest == ERR_NOT_ENOUGH_RESOURCES) {
-                    creep.moveTo(9,5,{reusePath: 20})
-                }
-			} else {
+            //they use too much from the storages
+			//var targets = creep.room.find(FIND_STRUCTURES, {
+            //    filter: (structure) => {
+            //        return (structure.structureType == STRUCTURE_STORAGE) &&
+            //            structure.store[RESOURCE_ENERGY] > 0;
+            //    }
+        	//});
+			//if(targets.length > 0) {
+            //    let trytest = creep.withdraw(targets[0],RESOURCE_ENERGY)
+            //	if(trytest == ERR_NOT_IN_RANGE) {
+            //    	creep.moveTo(targets[0],{reusePath: 20})
+            //    }
+            //    if(trytest == ERR_NOT_ENOUGH_RESOURCES) {
+            //        creep.moveTo(9,5,{reusePath: 20})
+            //    }
+			//} else {
 				// Register the creep to a source if not already registered
 				if(creep.memory.registeredsource == undefined || creep.memory.registeredsource == 0) {
 				    register.register("buildersources", creep);
 				}
 				// Harvest energy from the assigned source
 				register.harvest(creep);
-			}
+			//}
         }
     }
 }

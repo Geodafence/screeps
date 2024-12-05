@@ -7,24 +7,26 @@ var code = {
             //if(creep.withdraw(Game.getObjectById("67374ee88353ed00121a6e84"),RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
             //    creep.moveTo(Game.getObjectById("67374ee88353ed00121a6e84"))
             //}
-			var targets = creep.room.find(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return (structure.structureType == STRUCTURE_STORAGE) &&
-                        structure.store[RESOURCE_ENERGY] > 100;
-                }
-        	});
-			if(targets.length > 0) {
-            	if(creep.withdraw(targets[0],RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-                	creep.moveTo(targets[0],{reusePath: 40})
-                }
-			} else {
+
+            //they use too much from the storages
+			//var targets = creep.room.find(FIND_STRUCTURES, {
+            //    filter: (structure) => {
+            //        return (structure.structureType == STRUCTURE_STORAGE) &&
+            //            structure.store[RESOURCE_ENERGY] > 100;
+            //    }
+        	//});
+			//if(targets.length > 0) {
+            //	if(creep.withdraw(targets[0],RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
+            //    	creep.moveTo(targets[0],{reusePath: 40})
+            //    }
+			//} else {
 				// Register the creep to a source if not already registered
 				if(creep.memory.registeredsource == undefined || creep.memory.registeredsource == 0) {
 				    register.register("upgradersources", creep);
 				}
 				// Harvest energy from the assigned source
 				register.harvest(creep);
-			}
+			//}
         } else {
 	       register.remove("upgradersources",creep);
             if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
