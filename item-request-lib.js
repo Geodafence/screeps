@@ -1,9 +1,17 @@
 
-
 function getmasterspawn(creep) {
     return creep.room.find(FIND_MY_SPAWNS)[0]
 }
 var code = {
+    containsRequest: function(spawn,buildId,type=null,amount=null) {
+        let ret = false
+        for(let I in spawn.memory.itemrequests) {
+            let request = spawn.memory.itemrequests[I]
+            let istrue = false
+            
+        }
+        return ret
+    },
     /** 
      * @param {Creep} creep
     **/
