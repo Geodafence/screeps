@@ -167,7 +167,7 @@ module.exports.loop = function () {
             return structure.structureType === STRUCTURE_LINK
         }})
         for(let I in alllinks) {
-            linkcode.tick(alllinks[I])
+            linkcode.tick(alllinks[I]);
         }
         // Set cache to 0 if the controller level is 1
         if(currentspawn.room.controller.level == 1) {

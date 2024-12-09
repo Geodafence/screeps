@@ -169,7 +169,14 @@ var code = {
             }
 
     },
-
+    claimerrequest: function(info) {
+        if (Memory.storedcreeps.length > 0) {
+            let creep = Memory.claimercreeps[0];
+            Memory.storedcreeps = funcs.Lremove(Memory.storedcreeps, creep);
+            return creep;
+        }
+        return null;
+    },
     // Request a new creep from stored creep memory, if available
     creeprequest: function (info) {
         if (Memory.storedcreeps.length > 0) {

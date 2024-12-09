@@ -186,6 +186,7 @@ var code = {
             return
         }
         var allstores = Memory.storecache
+        var allstorescheck = Memory.storecache
         var allmodules
         var buildercost
         var allmodulelevels = [
@@ -197,15 +198,23 @@ var code = {
             [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE],
             [MOVE,MOVE,MOVE,CARRY,CARRY,WORK,WORK,WORK],
         ] 
+        var milestones = {30:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY]}
         if(allmodulelevels.length-1 < allstores) {
             allstores = allmodulelevels.length-1
         }
         if(Game.spawns[spawnname].room.controller.level == 1) {
             allstores = 0
+            allstorescheck = allstores
         }
         allmodules = allmodulelevels[allstores]
         buildercost = 300+(50*allstores)
-
+        for(am in milestones) {
+            if(Game.spawns[spawnname].room.controller.level != 1 && allstorescheck >= am) {
+                allmodules = milestones[am]
+                allstores = allstorescheck
+                buildercost = funcs.partcost(allmodules)
+            }
+        }
         Memory.builderlevel = allstores
         if(Game.spawns[spawnname].room.energyAvailable >= buildercost) {
             if(code.checkbuildwant(spawnname) > Memory.spawns[spawnname].builders.length) {

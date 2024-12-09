@@ -122,6 +122,7 @@ var code = {
     },
     removerequests: function(building) {
         for(let I in getmasterspawn(building).memory.itemrequests) {
+            console.log("master spawn: "+getmasterspawn(building))
             let info = getmasterspawn(building).memory.itemrequests[I]
             if(info.id===building.id) {
                 getmasterspawn(building).memory.itemrequests.splice(I,1)

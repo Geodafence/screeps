@@ -124,6 +124,7 @@ var code = {
             global.defenseNeeded = 20
             return
         }
+
         if((creep.memory.targetCreeps.length > 0 && creep.memory.targetCreeps[0] in Game.creeps)) {
             let end = Game.creeps[creep.memory.targetCreeps[0]].pos.findClosestByRange(FIND_DROPPED_RESOURCES);
             if(!end) {
@@ -131,9 +132,11 @@ var code = {
             }
         
         }
+
         if(creep.memory.targetCreeps.length == 0) {
             creep.memory.endearly += 5
         }
+
         if((creep.memory.patrolling.room !== creep.room.name) && (creep.memory.moving == false)) {
             //if(creep.memory.targetCreeps.length > 0) {
             //    if(creep.memory.targetCreeps[0] in Memory.LRMpaths) {
@@ -170,6 +173,14 @@ var code = {
                 creep.memory.moving = true;
             }
         } else {
+            if(global.restartEco !== undefined) {
+                if(Game.spawns[global.restartEco]) {
+                    creep.memory.spawnid = Game.spawns[global.restartEco].id
+                } else {
+                    console.log("spawn doesn't exist!")
+                }
+                
+            }
             if(creep.store[RESOURCE_ENERGY] == 0) {
                 creep.memory.moving = false;
                 creep.memory.patrolling = undefined
@@ -189,9 +200,7 @@ var code = {
             let leepicstorage = Game.getObjectById(creep.memory.spawnid).room.find(FIND_STRUCTURES, { filter: (structure) => {
                 return structure.structureType == STRUCTURE_STORAGE
             }})
-            if(global.restartEco !== undefined) {
-                creep.memory.spawnid = Game.spawns[global.restartEco].id
-            }
+
             if(leepicstorage&& Game.getObjectById(creep.memory.spawnid).memory.queen !== undefined) {
                 leepicstorage = leepicstorage[0]
                 creep.memory.cachsource = leepicstorage.id
