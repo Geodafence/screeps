@@ -44,7 +44,7 @@ function flee(creep, goal) {
   return ret
 }
 const funcs = require("general.functions");
-const { isNull } = require("lodash");
+const { isNull, isUndefined } = require("lodash");
 var code = {
     locateMinerCreeps: function(creep) { 
         
@@ -93,7 +93,7 @@ var code = {
         if(creep.memory.endearly === undefined) {
             creep.memory.endearly = 0
         }
-        if(isNull(Game.getObjectById(creep.memory.spawnid))||isNull(creep.memory.spawnid)) {
+        if(isNull(Game.getObjectById(creep.memory.spawnid))||isUndefined(creep.memory.spawnid)||creep.memory.spawnid===0) {
             /*
             new focus system allows for active balancing rather than randomizing
             let keys = []

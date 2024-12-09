@@ -96,10 +96,15 @@ module.exports.loop = function () {
     global.haulerfocus=0
     let grab = 0
     let info = 1000000000000000
+    let keyfix = Game.spawns.keys
+    let spawnamount = 0
+    for(let a in keyfix) {
+        spawnamount+=1
+    }
     for(let temp in Game.spawns) {
         let spawn = Game.spawns[temp]
         if(spawn.room.storage) {
-            if(spawn.room.storage.store[RESOURCE_ENERGY]<info&&(spawn.memory.queen!==undefined||spawn.memory.queen2!==undefined)) {
+            if(spawn.room.storage.store[RESOURCE_ENERGY]<info&&(spawn.memory.queen!==undefined||spawn.memory.queen2!==undefined)||spawnamount>1) {
                 grab=temp
                 info=spawn.room.storage.store[RESOURCE_ENERGY]
             }
