@@ -90,7 +90,9 @@ var code = {
                 }
                 
             }
-            let check = creep.room.find(FIND_HOSTILE_CREEPS);
+            let check = creep.room.find(FIND_HOSTILE_CREEPS,{filter: function(creep) {
+                return creep.owner.username !== "chungus3095"
+            }});
             if(check.length > 0) {
                 target = creep.pos.findClosestByRange(FIND_STRUCTURES, { filter: (structure) => {
                     return structure.structureType == STRUCTURE_TOWER&&structure.store.getFreeCapacity(RESOURCE_ENERGY) > 500;

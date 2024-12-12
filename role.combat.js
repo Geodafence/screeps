@@ -63,7 +63,9 @@ function combatCalc(creep,target) {
                     flee(creep,target)
                 }
             }
-            if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3).length > 1) {
+            if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 3,{filter: function(creep) {
+                return creep.owner.username !== "chungus3095"
+            }}).length > 1) {
                 creep.rangedMassAttack()
             } else creep.rangedAttack(target)
             if(creep.pos.getRangeTo(target) > 3) {
@@ -92,7 +94,9 @@ var code = {
             }
             }
         if(Game.flags.attack === undefined) {
-            var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+            var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS,{filter: function(creep) {
+                return creep.owner.username !== "chungus3095"
+            }});
             if (closestHostile) {
                 creep.memory.stopmoving = 0;
                 combatCalc(creep, closestHostile)
@@ -145,12 +149,14 @@ var code = {
         if(theif) {
             creep.moveTo(Game.flags.attack,{reusePath: 200,stroke: '#ff0000'})
         } else {
-            let target1 = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
+            let target1 = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS,{filter: function(creep) {
+                return creep.owner.username !== "chungus3095"
+            }});
             let target2 = creep.room.find(FIND_HOSTILE_STRUCTURES);
             for(const t in target2) {
                 I = target2[t]
                 if(I.structureType == STRUCTURE_TOWER&&creep.room.find(FIND_HOSTILE_CREEPS,{filter: function(crep) {
-                    return crep.getActiveBodyparts(ATTACK) > 0|| crep.getActiveBodyparts(RANGED_ATTACK) > 0;
+                    return (crep.getActiveBodyparts(ATTACK) > 0|| crep.getActiveBodyparts(RANGED_ATTACK) > 0) && crep.owner.username !== "chungus3095";
                 }}).length==0) {
                     target1 = null
                     target2 = [I]

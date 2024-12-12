@@ -76,7 +76,9 @@ var code = {
 
                             // Display label indicating the creep's mining task and target room
                             new RoomVisual(creep.room.name).text('LRM, mining for room: ' + RoomObject.room, creep.pos.x, creep.pos.y + 1, { align: 'center', font: 0.3, color: 'blue', stroke: "white", strokeWidth: 0.01 });
-                            if (creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {
+                            if (creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5,{filter: function(creep) {
+                                return creep.owner.username !== "chungus3095"
+                            }}).length > 0) {
                                 let alreadyrequested = -1
                                 for (let temp in Memory.defenserequests) {
                                     if (Memory.defenserequests[temp].room == creep.room.name) {

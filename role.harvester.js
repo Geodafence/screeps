@@ -31,7 +31,9 @@ var roleHarvester = {
                     }
             });
             targets.sort((a, b) => (a.structureType == STRUCTURE_STORAGE || a.structureType == STRUCTURE_TOWER) - (b.structureType == STRUCTURE_STORAGE || b.structureType == STRUCTURE_TOWER));
-            if(creep.room.find(FIND_HOSTILE_CREEPS).length > 0) {
+            if(creep.room.find(FIND_HOSTILE_CREEPS,{filter: function(creep) {
+                return creep.owner.username !== "chungus3095"
+            }}).length > 0) {
                 let set = creep.room.find(FIND_STRUCTURES, {filter: function(struct) {
                     return struct.structureType == STRUCTURE_TOWER
                 }})

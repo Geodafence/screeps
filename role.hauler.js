@@ -109,8 +109,12 @@ var code = {
             creep.memory.spawnid = Game.spawns[val].id
         }
         new RoomVisual(creep.room.name).text('Hauler, grabbing from room: '+creep.memory.patrolling.room, creep.pos.x, creep.pos.y+1, {align: 'center',font:0.3,color:'red',stroke:"white",strokeWidth:0.01}); 
-        if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5).length > 0) {
-            flee(creep,creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, 5))
+        if(creep.pos.findInRange(FIND_HOSTILE_CREEPS, 5,{filter: function(creep) {
+            return creep.owner.username !== "chungus3095"
+        }}).length > 0) {
+            flee(creep,creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS, 5,{filter: function(creep) {
+                return creep.owner.username !== "chungus3095"
+            }}))
             let alreadyrequested = -1
             for(let temp in Memory.defenserequests) {
                 if(Memory.defenserequests[temp].room == creep.room.name) {
@@ -238,7 +242,9 @@ var code = {
                     }
                     }
                 }
-                let check = creep.room.find(FIND_HOSTILE_CREEPS);
+                let check = creep.room.find(FIND_HOSTILE_CREEPS,{filter: function(creep) {
+                    return creep.owner.username !== "chungus3095"
+                }});
                 if(check.length > 0) {
                     creep.memory.cachsource = creep.pos.findClosestByRange(FIND_STRUCTURES, { filter: (structure) => {
                         return structure.structureType == STRUCTURE_TOWER
