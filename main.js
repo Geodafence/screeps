@@ -32,6 +32,7 @@ Memory.miningrooms = [
 ];
 global.nextupdate = [];
 global.nexttick = [];
+global.avgcpu = []
 
 // Import necessary modules for various roles and functions
 var harvestercode = require('role.harvester');
@@ -60,6 +61,7 @@ module.exports.loop = function () {
         console.log("extremely low cpu bucket, terminating")
         return
     }
+    RawMemory.setActiveSegments([1]);
     Memory.haulerlevel = 0
     global.fixticks += 1
     global.updatecache += 1
@@ -96,15 +98,15 @@ module.exports.loop = function () {
     global.haulerfocus=0
     let grab = 0
     let info = 1000000000000000
-    let keyfix = Game.spawns.keys
+    let keyfix = Game.spawns
     let spawnamount = 0
-    for(let a in keyfix) {
+    for(let a in Game.spawns) {
         spawnamount+=1
     }
     for(let temp in Game.spawns) {
         let spawn = Game.spawns[temp]
         if(spawn.room.storage) {
-            if(spawn.room.storage.store[RESOURCE_ENERGY]<info&&(spawn.memory.queen!==undefined||spawn.memory.queen2!==undefined)||spawnamount>1) {
+            if(spawn.room.storage.store[RESOURCE_ENERGY]<info&&(spawn.memory.queen!==undefined||spawn.memory.queen2!==undefined)||spawnamount<=1) {
                 grab=temp
                 info=spawn.room.storage.store[RESOURCE_ENERGY]
             }
@@ -149,7 +151,9 @@ module.exports.loop = function () {
         }
             for(let towerold in towers) {
                 let tower = towers[towerold]
-                let attackers = tower.room.find(FIND_HOSTILE_CREEPS)
+                let attackers = tower.room.find(FIND_HOSTILE_CREEPS, {filter: function(creep) {
+                    return creep.owner.username !== "chungus3095"
+                }})
                 if(attackers.length > 0) {
                     attackers.sort((a, b) => b.hits - a.hits);
                     tower.attack(attackers[0])
@@ -247,10 +251,10 @@ module.exports.loop = function () {
         Memory.haulers.forEach(item => haulerforeach(item,global.haulerfocus));
     }
     if(Game.cpu.bucket >= 2000) {
-        for(temp in Memory.claimers) {
+        for(let temp in Memory.claimers) {
             let claimer = Game.creeps[Memory.claimers[temp]]
             if(claimer === undefined) {
-                Memory.claimers = funcs.Lremove(Memory.claimers,temp)
+                Memory.claimers[temp] = undefined
                 continue
             }
             if(claimer.memory.reserving !== undefined) {
@@ -264,15 +268,17 @@ module.exports.loop = function () {
                         if(claimer.reserveController(check[0]) == ERR_NOT_IN_RANGE) claimer.moveTo(check[0])
                     }
                 }
-            }   
+            } else {
+                claimer.memory.reserving = Memory.miningrooms[temp].room
+            }
         }
-        for(temp in Memory.longRangeBuilders) {
+        for(let temp in Memory.longRangeBuilders) {
             let Lbuilder  = Memory.longRangeBuilders[temp]
             if(Game.creeps[Lbuilder] === undefined) {
                 Memory.longRangeBuilders = funcs.Lremove(Memory.longRangeBuilders,temp)
                 continue
             }
-            longbuild.tick(Game.creeps[Lbuilder])
+            longbuild.tick(Game.creeps[temp])
         }
     }
     // Run the miner code for long-range mining logic
@@ -309,6 +315,27 @@ module.exports.loop = function () {
             Memory.fighters.forEach(item => combatforeach(item));
         }
     // Log CPU usage with different warnings based on usage level
+    let ecolevel = 3
+    if(global.restartEco!==undefined) {
+        ecolevel = 2
+    }
+    if(Memory.haulers.length < 2) {
+        ecolevel = 1
+    }
+    if(Memory.haulers.length < 1) {
+        ecolevel = 0
+    }
+    global.avgcpu.push(Game.cpu.getUsed())
+    let avg = array => array.reduce((a, b) => a + b) / array.length;
+    let stringify = {
+        cpuUsage: avg(avgcpu),
+        bucket: Game.cpu.bucket,
+        ecoStatus: ecolevel
+    }
+    if(global.avgcpu.length>14) {
+        global.avgcpu.splice(0,1)
+    }
+    RawMemory.segments[1] = JSON.stringify(stringify)
     if(Game.cpu.getUsed() >= 20) {
         console.log("tf are you doing, you're at the max cpu! (" + Game.cpu.getUsed() + ")");
     }
