@@ -198,7 +198,9 @@ var code = {
             [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE],
             [MOVE,MOVE,MOVE,CARRY,CARRY,WORK,WORK,WORK],
         ] 
-        var milestones = {30:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY]}
+        var milestones = {
+            //30:[MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,WORK,WORK,WORK,WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY,CARRY]
+        }
         if(allmodulelevels.length-1 < allstores) {
             allstores = allmodulelevels.length-1
         }
@@ -222,7 +224,21 @@ var code = {
                     if(Game.spawns[spawnname].spawning == null) {
                         global.createdunit = 1
                         code.createbuild(spawnname, allmodules)
+                        return
                     }
+                }
+            }
+        }
+        if(Memory.haulers.length >= global.haulercreations && Memory.storecache >= 40) {
+            allmodules=[MOVE,MOVE,MOVE,CLAIM,CLAIM,CLAIM]
+            let need = 0
+            for(AAA in Memory.claimers) {
+                need+=1
+            }
+            if(need<Memory.miningrooms.length&&Game.spawns[spawnname].room.energyAvailable >= 1950) {
+                if(Game.spawns[spawnname].spawning == null) {
+                    global.createdunit = 1
+                    code.createclaimer(spawnname, allmodules)
                 }
             }
         }
@@ -355,6 +371,28 @@ var code = {
                     }
                 }
             }
+        }
+    },
+    createclaimer: function(spawnname, moduledata) {
+        let regas = -1
+        for(let I in Memory.miningrooms) {
+            if(I in Memory.claimers === false&&(Game.rooms[Memory.miningrooms[I].room].controller===undefined||Game.rooms[Memory.miningrooms[I].room].controller.level===0)) {
+                regas = I
+                break
+            }
+        }
+        if(regas!==-1) {
+            var test = assign.newid()
+            console.log("attemping to create a claimer with id: "+ test)
+            var errorreg = Game.spawns[spawnname].spawnCreep(moduledata, test, {
+                memory: {spawnid: Game.spawns[spawnname].id}
+            })
+            console.log("errorlog: "+errorreg)
+            if(errorreg == 0) {
+                Memory.claimers[regas]=test
+            }
+        } else {
+            global.createdunit = 0
         }
     },
     createqueen: function(spawnname, moduledata) {
