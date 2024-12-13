@@ -376,9 +376,16 @@ var code = {
     createclaimer: function(spawnname, moduledata) {
         let regas = -1
         for(let I in Memory.miningrooms) {
-            if(I in Memory.claimers === false&&(Game.rooms[Memory.miningrooms[I].room].controller===undefined||Game.rooms[Memory.miningrooms[I].room].controller.level===0)) {
-                regas = I
-                break
+            if(Game.rooms[Memory.miningrooms[I].room]) {
+                if(I in Memory.claimers === false&&(Game.rooms[Memory.miningrooms[I].room].controller!==undefined)) {
+                    if(Game.rooms[Memory.miningrooms[I].room].controller.level===0) {
+                        regas = I
+                        break
+                    }
+                } else if(I in Memory.claimers === false&&(Game.rooms[Memory.miningrooms[I].room].controller===undefined)) {
+                    regas = I
+                    break
+                }
             }
         }
         if(regas!==-1) {

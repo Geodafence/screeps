@@ -319,7 +319,7 @@ module.exports.loop = function () {
     if(global.restartEco!==undefined) {
         ecolevel = 2
     }
-    if(Memory.haulers.length < 2) {
+    if(Memory.haulers.length < 4) {
         ecolevel = 1
     }
     if(Memory.haulers.length < 1) {
