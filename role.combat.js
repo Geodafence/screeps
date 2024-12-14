@@ -46,6 +46,9 @@ function flee(creep, goal) {
   return ret
 }
 function combatCalc(creep,target) {
+    if(creep.getActiveBodyparts(HEAL) > 0&&creep.saying !== "ATTACK"&&creep.hits<creep.hitsMax)  {
+        creep.heal(creep)
+    }
     if(creep.saying === undefined) {
         lastAction = 0
     } else {
@@ -88,11 +91,6 @@ var code = {
      * @returns 
      */
     run: function(creep) {
-        if(creep.getActiveBodyparts(HEAL) > 0) {
-            if(creep.hits < creep.hitsMax*0.75) {
-                    creep.heal(creep)
-            }
-            }
         if(Game.flags.attack === undefined) {
             var closestHostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS,{filter: function(creep) {
                 return creep.owner.username !== "chungus3095"
@@ -101,6 +99,9 @@ var code = {
                 creep.memory.stopmoving = 0;
                 combatCalc(creep, closestHostile)
                 return
+            }
+            if(creep.getActiveBodyparts(HEAL) > 0&&creep.saying !== "ATTACK"&&creep.hits<creep.hitsMax)  {
+                creep.heal(creep)
             }
             // Patrolling behavior
             if (creep.memory.patrolling === undefined) {

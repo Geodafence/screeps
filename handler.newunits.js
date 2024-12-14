@@ -93,7 +93,10 @@ var code = {
                 if(Memory.spawns[spawnname].minharvs === undefined) {
                     Memory.spawns[spawnname].minharvs = []
                 }
-                if(Memory.spawns[spawnname].minharvs && (Memory.haulers.length >= global.haulercreations && Memory.longrangemining[4].creeps.length !== 0)&&(Memory.spawns[spawnname].queen2&&Memory.spawns[spawnname].queen)) {
+                let minerals = creep.room.find(FIND_MINERALS,{filter: function(a) {
+                    return a.mineralAmount > 0
+                }})
+                if(Memory.spawns[spawnname].minharvs && (Memory.haulers.length >= global.haulercreations && Memory.longrangemining[4].creeps.length !== 0)&&(Memory.spawns[spawnname].queen2&&Memory.spawns[spawnname].queen)&&minerals.length>0) {
                     if(Memory.spawns[spawnname].minharvs.length < 1) {
                         if(Game.spawns[spawnname].spawning === null) {
                             global.createdunit = 1

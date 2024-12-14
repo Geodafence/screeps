@@ -55,7 +55,8 @@ if(global.fixticks === undefined) {
 }
 global.updatecache = 400
 console.log("restarting loop");
-
+//var ramparttest = require("rampartcalc")
+//console.log(ramparttest.findOptimalRamparts(Game.rooms["E52S18"]))
 module.exports.loop = function () {
     if(Game.cpu.bucket < 500) {
         console.log("extremely low cpu bucket, terminating")
@@ -159,7 +160,7 @@ module.exports.loop = function () {
                     tower.attack(attackers[0])
                 } else {
                     let targets = tower.room.find(FIND_STRUCTURES, {
-                        filter: object => object.hits < object.hitsMax*0.75
+                        filter: object => object.hits < object.hitsMax*0.75 && object.hits < 1000000
                     });
                     
                     // Sort by damage level (most damaged first)
